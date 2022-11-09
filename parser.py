@@ -81,6 +81,15 @@ class Parser:
 
         return node
 
+    def equation(self):
+        node = self.expr()
+        while self.current_token.type == TokenType.EQ:
+            token = self.current_token
+            if token.type == TokenType.EQ:
+                self.eat(TokenType.EQ)
+            node = BinOp(left=node, op=token, right=self.expr)
+        return node
+
+
     def parse(self):
-        return self.expr()
-        
+        return self.equation()
