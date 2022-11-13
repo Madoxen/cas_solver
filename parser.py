@@ -4,13 +4,13 @@ from lexer import Lexer, TokenType
 class AST:
     pass
 
-
 class BinOp(AST):
     def __init__(self, left, op, right):
         self.left = left
         self.token = self.op = op
         self.right = right
 
+#Note: num can represent negative values as well
 class Num(AST):
     def __init__(self, token):
         self.token = token
@@ -87,9 +87,26 @@ class Parser:
             token = self.current_token
             if token.type == TokenType.EQ:
                 self.eat(TokenType.EQ)
-            node = BinOp(left=node, op=token, right=self.expr)
+            node = BinOp(left=node, op=token, right=self.expr())
         return node
 
 
     def parse(self):
         return self.equation()
+
+
+def test_parser():
+    p = Parser("a + b = c")
+    result = p.parse()
+
+    #should be parsed as
+    #     =
+    #    / \
+    #   +   c
+    #  / \
+    # a   b
+    assert (result.op.type == TokenType.EQ 
+    and result.left.op.type == TokenType.PLUS
+    and result.left.left.token.type == TokenType.SYM
+    and result.left.right.token.type == TokenType.SYM
+    and result.right.token.type == TokenType.SYM)
