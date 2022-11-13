@@ -1,14 +1,46 @@
-from parser import Parser
+from typing import List
+from parser import AST, BinOp, Num, Parser
 from lexer import TokenType
 
 
+class SolverException(Exception):
+    pass
+
+
 class Solver:
-    def __init__(self,string: str):
-        self.ast = Parser(string).parse()
-    
+    def __init__(self, string: str):
+        self.root = Parser(string).parse()
+
     def solve(self, symbol: str):
         """Solves for given _symbol_
         Solving is essentialy a process of moving all non _symbol_ nodes to the right side of the tree
         while having all _symbol_ nodes on the left side. This needs to be done with rules of algebra"""
 
-        #perform DFS to find requested symbol occurences
+        # note: maybe if there is no equals sign, just add "= 0" to the end of equation?
+        if self.root.op.type != TokenType.EQ:
+            raise SolverException("Provided string is not an equation")
+
+        # perform DFS to find requested symbol occurences
+
+    def dfs(self, symbol: str, start_point: AST = None) -> List[AST]:
+        """Searches the ast tree
+        Function assumes binary tree and no loops,
+        if there are some, it will hang and destroy the universe"""
+        if start_point == None:
+            start_point = self.root
+        result = []
+        if isinstance(start_point, Num):
+            if start_point.value == symbol:
+                result.append(start_point)
+        elif isinstance(start_point, BinOp):
+            result.extend(self.dfs(symbol, start_point.left))
+            result.extend(self.dfs(symbol, start_point.right))
+        else:
+            return []  # we should throw exception here really...
+        return result
+
+
+def test_dfs():
+    s = Solver("a + b = a + c")
+    res = s.dfs("a")
+    assert len(res) == 2
