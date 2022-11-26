@@ -41,13 +41,13 @@ class Parser:
         if token.type == TokenType.SYM:
             self.eat(TokenType.SYM)
             return Num(token)
-        # elif token.type == LPAREN:
-        #     self.eat(LPAREN)
-        #     node = self.expr()
-        #     self.eat(RPAREN)
-        #     return node
+        elif token.type == TokenType.LPAREN:
+            self.eat(TokenType.LPAREN)
+            node = self.expr()
+            self.eat(TokenType.RPAREN)
+            return node
 
-    def term(self):
+    def term(self): 
         """term : factor ((TokenType.MUL | TokenType.DIV) factor)*"""
         node = self.factor()
 
@@ -81,7 +81,7 @@ class Parser:
 
         return node
 
-    def equation(self):
+    def equation(self): 
         node = self.expr()
         while self.current_token.type == TokenType.EQ:
             token = self.current_token

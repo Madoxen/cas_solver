@@ -12,7 +12,10 @@ class TokenType(Enum):
     NUM = 5
     SYM = 6
     EQ = 7
+    LPAREN = 8
+    RPAREN = 9
     EOF = 999
+
 
 class Token: 
     def __init__(self, value, type):
@@ -24,9 +27,9 @@ class Lexer:
     
     - Consecutive numbers like 3, 2313 or 3.14 are converted into NUM
     - Symbols -, +, *, /, ^ are converted, respectively, into MINUS, PLUS, MUL, DIV, POW
+    - Parenthesis (, ) are converted, respectively, into LPAREN, RPAREN
     - Words: a, ab, haha are converted into SYM
-    - Functions: a(...) are converted into FUNC 
-    
+    - TODO: Functions: a(...) are converted into FUNC 
     """
 
     operators = {
@@ -35,7 +38,9 @@ class Lexer:
         '*' : TokenType.MUL,
         '/' : TokenType.DIV,
         '^' : TokenType.POW,
-        '=' : TokenType.EQ
+        '=' : TokenType.EQ,
+        '(' : TokenType.LPAREN,
+        ')' : TokenType.RPAREN
     }
 
     def __init__(self):
