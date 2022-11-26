@@ -57,12 +57,17 @@ class Solver:
         while self.root.left != target_node:
 
             #move OP and it's left subtree to the right side
-            
             op = self.root.left
-            self.root.left = op.right
-            
             r = self.root.right
-            op.right = r
+            if op.right == target_node:
+                self.root.left = op.right
+                op.right = r
+            else:
+                self.root.left = op.left
+                op.left = r
+                
+            
+            
             self.root.right = op
         
             #Inverse the OP
@@ -92,5 +97,5 @@ class Solver:
         return result
 
 if __name__ == "__main__":
-    s = Solver("a+b = c+d")
-    print(s.solve("d"))
+    s = Solver("(a+b)*c-7 = 1")
+    print(s.solve("a"))

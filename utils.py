@@ -24,7 +24,7 @@ def postorder(tree: AST):
 def trace(root) -> str:
     """Creates human readable equation from AST"""
     inord = inorder(root)
-    return reduce(lambda x, y: str(x) + " " + str(y), list(map(lambda x: x.token.value, inord)))
+    return reduce(lambda x, y: f"{x} {y}", list(map(lambda x: x.token.value, inord)))
 
 def test_inorder():
     #    1

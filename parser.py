@@ -93,4 +93,3 @@ class Parser:
 
     def parse(self):
         return self.equation()
-    
