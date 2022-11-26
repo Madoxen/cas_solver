@@ -32,7 +32,7 @@ class Solver:
 
         #1. Get all searched symbols to the left side
         #2. Get all not-searched symbols to the right side
-
+            
 
         return trace(self.root)
         
@@ -53,10 +53,3 @@ class Solver:
         else:
             return []  # we should throw exception here really...
         return result
-
-
-def test_dfs():
-    s = Solver("a + b = a + c")
-    res = s.dfs("a")
-    assert len(res) == 2
-
