@@ -48,10 +48,19 @@ class Lexer:
         self.current_token = Token("",TokenType.BEGIN)
         self.current_pos = 0
         self.string = ""
+        self.max_pos = 0
+
+    def _next_char(self):
+        self.current_pos += 1
+        if self.current_pos < self.max_pos:
+            self.current_char = self.string[self.current_pos]
+        else: 
+            self.current_char = "\0"
 
     def lex(self, string: str) -> List[Token]:
         result = []
         self.string = string
+        self.max_pos = len(string)
         self.current_char = string[self.current_pos]
         while self.current_token.type != TokenType.EOF:
             self.current_token = self._get_next_token()
@@ -59,20 +68,22 @@ class Lexer:
         return result
 
     def _get_next_token(self) -> Token:
+        #Skip spaces
+        #TODO: support for other white spaces
+        if self.current_char == ' ':
+            while self.current_char == ' ':
+                self._next_char()
+
         if self.current_pos >= len(self.string):
             return Token("\0", TokenType.EOF)
 
-        if self.current_char == ' ':
-            while self.current_char == ' ':
-                self.current_pos += 1
-                print(self.current_char)
-                self.current_char = self.string[self.current_pos]
-
+        #Number tokens
         if self.current_char.isdigit():
-            #todo: support for floats
+            #TODO: support for floats
             curr_char = self.current_char
             pos = self.current_pos
             tok = ""
+            #Take contiguous string of numbers
             while curr_char.isdigit():
                 tok += curr_char
                 pos += 1
@@ -84,11 +95,12 @@ class Lexer:
             self.current_char = curr_char
             return Token(int(tok), TokenType.NUM)
         
+        #Symbol tokens
         if self.current_char.isalpha():
-            #todo: support for floats
             curr_char = self.current_char
             pos = self.current_pos
             tok = ""
+            #Take contiguous string of alphabetic characters (word)
             while curr_char.isalpha():
                 tok += curr_char
                 pos += 1
@@ -100,37 +112,12 @@ class Lexer:
             self.current_char = curr_char
             return Token(tok, TokenType.SYM)
         
+        #1-char tokens/operators
         if len(self.current_char) == 1:
             op = self.operators.get(self.current_char, None)
             if op == None:
-                raise Exception("Invalid operator")
+                raise Exception(f"Invalid operator: {repr(self.current_char)}")
             char_op = self.current_char
-            self.current_pos += 1
-            self.current_char = self.string[self.current_pos]
+            self._next_char() #Advance character pointer
             return Token(char_op, op)
     
-
-
-def test_lexer_simple_num():
-    l = Lexer()
-    r = l.lex("1")
-    assert r[0].type == TokenType.NUM and r[0].value == 1
-    l = Lexer()
-    r = l.lex("12")
-    assert r[0].type == TokenType.NUM and r[0].value == 12
-
-def test_lexer_simple_sym():
-    l = Lexer()
-    r = l.lex("a")
-    assert r[0].type == TokenType.SYM and r[0].value == "a"
-    l = Lexer()
-    r = l.lex("ab")
-    assert r[0].type == TokenType.SYM and r[0].value == "ab"
-
-def test_lexer_expression():
-    input = "a + b"
-    l = Lexer()
-    r = l.lex(input)
-    print(r[0].value)
-    print(r[1].value)
-    assert r[0].type == TokenType.SYM and r[1].type == TokenType.PLUS and r[2].type == TokenType.SYM and r[3].type == TokenType.EOF
