@@ -1,6 +1,6 @@
 from lexer import Lexer, TokenType
 # nodes with no children are called leafs
-#most of code from https://ruslanspivak.com/lsbasi-part7/
+# general parser structure inspired by: https://ruslanspivak.com/lsbasi-part7/
 class AST:
     pass
 
@@ -11,13 +11,16 @@ class BinOp(AST):
         self.right = right
 
 #Note: num can represent negative values as well
+#Which in current version will lead to something like
+# a - -b
+#TODO: somehow handle this case 
 class Num(AST):
     def __init__(self, token):
         self.token = token
         self.value = token.value
 
-#TODO: implement unary OP ? 
-
+class ParserException(Exception):
+    pass
 
 class Parser:
     def __init__(self, string):
@@ -30,7 +33,7 @@ class Parser:
             self.pos += 1
             self.current_token = self.tokens[self.pos]
         else:
-            raise Exception("Invalid syntax")
+            raise ParserException("Invalid syntax")
 
     def factor(self):
         """factor : TokenType.NUM | LPAREN expr RPAREN"""

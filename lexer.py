@@ -2,6 +2,7 @@ from enum import Enum
 from typing import List
 
 
+
 class TokenType(Enum):
     BEGIN = -1
     PLUS = 0
@@ -21,6 +22,9 @@ class Token:
     def __init__(self, value, type):
         self.value = value
         self.type = type
+
+class LexerException(Exception):
+    pass        
 
 class Lexer:
     """Converts string input into tokens
@@ -67,6 +71,9 @@ class Lexer:
             result.append(self.current_token)
         return result
 
+    #TODO: refactor, extract functions processing
+    #different parts.
+    #TODO: add more diagnostics, exceptions
     def _get_next_token(self) -> Token:
         #Skip spaces
         #TODO: support for other white spaces
@@ -116,7 +123,7 @@ class Lexer:
         if len(self.current_char) == 1:
             op = self.operators.get(self.current_char, None)
             if op == None:
-                raise Exception(f"Invalid operator: {repr(self.current_char)}")
+                raise LexerException(f"Invalid operator: {repr(self.current_char)}")
             char_op = self.current_char
             self._next_char() #Advance character pointer
             return Token(char_op, op)

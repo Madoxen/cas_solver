@@ -1,8 +1,7 @@
 from typing import List
 from parser import AST, BinOp, Num, Parser
 from lexer import Lexer, TokenType
-from utils import inorder, trace 
-from functools import reduce
+from utils import trace 
 
 class SolverException(Exception):
     pass
@@ -13,7 +12,7 @@ class Solver:
         self.root = Parser(string).parse()
         self.inv_map = {v: k for k, v in Lexer.operators.items()}
 
-    def solve(self, symbol: str) -> str:
+    def solve(self, symbol: str) -> AST:
         """Solves for given _searched symbol_
         Solving is essentialy a process of moving all non _searched symbol_ nodes to the right side of the tree
         while having all _searched symbol_ nodes on the left side. This needs to be done with rules of algebra"""
@@ -75,7 +74,7 @@ class Solver:
             op.op.value = self.inv_map[op.op.type]
 
 
-        return trace(self.root)
+        return self.root
         
     
 
@@ -98,4 +97,5 @@ class Solver:
 
 if __name__ == "__main__":
     s = Solver("(a+b)*c-7 = 1")
-    print(s.solve("a"))
+    print(trace(s.solve("a")))
+    

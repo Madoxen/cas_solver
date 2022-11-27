@@ -21,10 +21,24 @@ def postorder(tree: AST):
     pass
 
 
-def trace(root) -> str:
+#TODO: Remove redundant parenthesis
+def trace(root : AST) -> str:
+    #HACK: Parenthesis removal
+    result = _trace(root)
+    return result[1:-1] 
+
+def _trace(root : AST) -> str:
     """Creates human readable equation from AST"""
-    inord = inorder(root)
-    return reduce(lambda x, y: f"{x} {y}", list(map(lambda x: x.token.value, inord)))
+    result = []
+    if isinstance(root, BinOp):
+        result.append('(')
+        result.extend(_trace(root.left))
+        result.append(root.op.value)
+        result.extend(_trace(root.right))
+        result.append(")")
+    else:
+        result.append(str(root.value))
+    return ''.join(result)
 
 def test_inorder():
     #    1
