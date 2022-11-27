@@ -1,11 +1,10 @@
 from typing import List
 from parser import AST, BinOp, Num, Parser
 from lexer import Lexer, TokenType
-from utils import trace 
+from utils import trace, inorder
 
 class SolverException(Exception):
     pass
-
 
 class Solver:
     def __init__(self, string: str):
@@ -22,13 +21,13 @@ class Solver:
             raise SolverException("Provided string is not an equation")
 
         # perform DFS to find requested symbol occurences
-        left_subtree_syms = self.dfs(symbol,self.root.left)
-        right_subtree_syms = self.dfs(symbol,self.root.right)
+        left_subtree_snodes = self.dfs(symbol,self.root.left)
+        right_subtree_snodes = self.dfs(symbol,self.root.right)
 
         #swap left with right if there are more searched symbols on the right side
-        if len(right_subtree_syms) > len(left_subtree_syms):
+        if len(right_subtree_snodes) > len(left_subtree_snodes):
             self.root.left, self.root.right = self.root.right, self.root.left
-            left_subtree_syms, right_subtree_syms = right_subtree_syms, left_subtree_syms
+            left_subtree_snodes, right_subtree_snodes = right_subtree_snodes, left_subtree_snodes
 
         #1. Get all searched symbols to the left side
         #2. Get all not-searched symbols to the right side
@@ -42,7 +41,7 @@ class Solver:
 
         #TODO: support multiple searched nodes 
         #1. find symbol that we are intrested in
-        target_node = left_subtree_syms[0]
+        target_node = left_subtree_snodes[0]
 
         inverse_op = {
             TokenType.DIV : TokenType.MUL,
@@ -51,29 +50,71 @@ class Solver:
             TokenType.MINUS : TokenType.PLUS,
         }
 
-        #continue as long as on the left we will have only
-        #the target node
-        while self.root.left != target_node:
+        # high level idea
+        # get traces to the searched symbols
+        # - along the trace apply inverse move to the right side
+        # while choosing the appropiate subtrees that do not
+        # contain the searched node (snode). Those subtrees
+        # will be moved together with OP node
 
-            #move OP and it's left subtree to the right side
-            op = self.root.left
-            r = self.root.right
-            if op.right == target_node:
-                self.root.left = op.right
-                op.right = r
-            else:
-                self.root.left = op.left
-                op.left = r
+        #go through all searched nodes
+        #Move everything that is not an snode
+        for snode in left_subtree_snodes:
+            path = list(reversed(self.path(snode)))
+            print(list(map(lambda x: x.token.value, path)))
+            for n, n2 in zip(path, path[1:]):
+                if n.token.type == TokenType.EQ: #skip equals
+                    continue
+
+                #determine if current node is left or right
+                #node of the parent
+                isLeft = False 
+                if n.parent.left == n:
+                    isLeft = True
+
+                #move symbol and the subtree that 
+                #does not have snode in it to the right
+                #inverting the op
+                #Attach the moved inverted op as a root
+                #of the right subtree, and attach
+                #the right subtree as a left child of moved
+                #inverted op 
                 
-            
-            
-            self.root.right = op
-        
-            #Inverse the OP
-            op.op.type = inverse_op[op.op.type]
-            op.op.value = self.inv_map[op.op.type]
+                root_right = self.root.right
+                #choose subtree
+                if n.right == n2:
+                    #snode is in right subtree
+                    #leave right subtree behind
+                    n.right.parent = n.parent
+                    if isLeft:
+                        n.parent.left = n.right
+                    else:
+                        n.parent.right = n.right
+                    
+                    #move left subtree to the right
+                    n.right = n.left
+                    n.left = root_right
+                else:
+                    #snode is in left subtree
+                    #leave left subtree behind
+                    n.left.parent = n.parent
+                    if isLeft:
+                        n.parent.left = n.left
+                    else:
+                        n.parent.right = n.left
+                    n.left = root_right
+                    
+                n.parent = self.root
+                root_right.parent = n
+                self.root.right = n
 
-
+                #Inverse the OP
+                inv_op =  inverse_op.get(n.op.type, False)
+                if not inv_op:
+                    raise SolverException(f"Could not find inverse operation for: {op.op.type}")
+                n.op.type = inverse_op[n.op.type]
+                n.op.value = self.inv_map[n.op.type]    
+            
         return self.root
         
     
@@ -92,10 +133,18 @@ class Solver:
             result.extend(self.dfs(symbol, start_point.left))
             result.extend(self.dfs(symbol, start_point.right))
         else:
-            return []  # we should throw exception here really...
+            return []
+        return result
+            
+    def path(self, start_point):
+        result = []
+        curr = start_point
+        while curr != None:
+            result.append(curr)
+            curr = curr.parent
         return result
 
 if __name__ == "__main__":
-    s = Solver("(a+b)*c-7 = 1")
-    print(trace(s.solve("a")))
-    
+    s = Solver("(a+b-d)*c-7 = 1*4")
+    r = s.solve("a")
+    print(trace(r))

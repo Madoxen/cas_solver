@@ -34,15 +34,15 @@ def test_solver_simple():
 def test_solver_simple():
     #             =               =                                   
     #            / \             / \                    
-    #           -   1   --->    a   +                    
+    #           -   1   --->    a   -                    
     #          / \                 / \                   
     #         *   7              div   b                      
     #        / \                 / \            
     #       +   c               +   c        
     #      / \                 / \
-    #     a   b               1   7 
+    #     a   b               1   7       
     s = Solver("(a+b)*c-7 = 1")
-    #assert s.solve("a") == "a =(((1+7)/c) - b)"
+    
     r = s.solve("a")
     assert r.op.type == TokenType.EQ
     assert r.left.token.type == TokenType.SYM
@@ -56,3 +56,18 @@ def test_solver_simple():
     assert r.right.left.left.left.value == 1
     assert r.right.left.left.right.value == 7
     
+    s = Solver("(a+b)*c-7 = 1")
+    r = s.solve("b")
+    assert r.op.type == TokenType.EQ
+    assert r.left.token.type == TokenType.SYM
+    assert r.left.value == "b"
+    assert r.right.op.type == TokenType.MINUS
+    assert r.right.right.token.type == TokenType.SYM
+    assert r.right.right.value == "a"
+    assert r.right.left.op.type == TokenType.DIV
+    assert r.right.left.right.value == "c"
+    assert r.right.left.left.op.type == TokenType.PLUS
+    assert r.right.left.left.left.value == 1
+    assert r.right.left.left.right.value == 7
+
+
