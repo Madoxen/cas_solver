@@ -2,26 +2,32 @@ from lexer import Lexer, TokenType
 # nodes with no children are called leafs
 # general parser structure inspired by: https://ruslanspivak.com/lsbasi-part7/
 class AST:
-    pass
+    def __init__(self, parent):
+        self.parent = parent
 
 class BinOp(AST):
-    def __init__(self, left, op, right):
+    def __init__(self, left: AST, op, right: AST, parent = None):
+        super().__init__(parent)
         self.left = left
         self.token = self.op = op
         self.right = right
+        self.left.parent = self
+        self.right.parent = self
 
 #Note: num can represent negative values as well
 #Which in current version will lead to something like
 # a - -b
 #TODO: somehow handle this case 
 class Num(AST):
-    def __init__(self, token):
+    def __init__(self, token, parent = None):
+        super().__init__(parent)
         self.token = token
         self.value = token.value
 
 class ParserException(Exception):
     pass
 
+#TODO: Add missing token implementation exceptions for missing token types
 class Parser:
     def __init__(self, string):
         self.tokens = Lexer().lex(string)
@@ -81,7 +87,6 @@ class Parser:
                 self.eat(TokenType.MINUS)
 
             node = BinOp(left=node, op=token, right=self.term())
-
         return node
 
     def equation(self): 
@@ -90,7 +95,8 @@ class Parser:
             token = self.current_token
             if token.type == TokenType.EQ:
                 self.eat(TokenType.EQ)
-            node = BinOp(left=node, op=token, right=self.expr())
+            #Equation should be the root of the expression tree
+            node = BinOp(left=node, op=token, right=self.expr(), parent=None)
         return node
 
 
