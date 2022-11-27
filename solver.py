@@ -111,7 +111,7 @@ class Solver:
                 #Inverse the OP
                 inv_op =  inverse_op.get(n.op.type, False)
                 if not inv_op:
-                    raise SolverException(f"Could not find inverse operation for: {op.op.type}")
+                    raise SolverException(f"Could not find inverse operation for: {n.op.type}")
                 n.op.type = inverse_op[n.op.type]
                 n.op.value = self.inv_map[n.op.type]    
             
@@ -145,6 +145,7 @@ class Solver:
         return result
 
 if __name__ == "__main__":
+    #s = Solver("(a+b-d)*c-7 = 1*4")
     s = Solver("(a+b-d)*c-7 = 1*4")
     r = s.solve("a")
     print(trace(r))
