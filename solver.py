@@ -1,13 +1,35 @@
 from typing import List
+#dotted module, because there exists already built-in
+#parser module, for accessing python parse trees
 from parser import AST, BinOp, Num, Parser, UnaryOp
-from lexer import Lexer, TokenType
+from lexer import Lexer, TokenType, Token
 from utils import trace, inorder
+
+
+#TODO: improve doc strings because they are misleading
+#TODO: build in move operation and add checks against
+#not supported moves
+
+def pow_inv(n: BinOp, target:AST):
+    """
+        Inverses given op
+    """
+
+    print("Inverting OP")
+    #invert exponent E --> 1/E
+    numerator = Num(Token(1, TokenType.NUM), None)
+    denominator = n.right
+    op_tok = Token("/", TokenType.DIV)
+    inverted_exponent = BinOp(numerator, op_tok, denominator, n)
+    n.right = inverted_exponent
+    
 
 
 def div_inv(n: BinOp, target: AST):
     """
-    Solve for A:  A / B = C --> A = C * B
-    Solve for B:  A / B = C --> B = A / C"""
+    Target - A:  A / B
+    Target - B:  A / B
+    """
 
     if target == n.right:
         #switch right side with left
@@ -18,20 +40,20 @@ def div_inv(n: BinOp, target: AST):
         n.op.value = "*"
 
 def mul_inv(n: BinOp, target: AST):
-    """Solve for A: A * B = C ---> C / B"""
-    """Solve for B: A * B = C ---> C / A"""
+    """Target - A: A * B = C ---> C / B
+    Target - B: A * B = C ---> C / A"""
     n.op.type = TokenType.DIV
     n.op.value = "/"
 
 def add_inv(n: BinOp, target: AST):
-    """Solve for A: A + B = C ---> C - B"""
-    """Solve for B: A + B = C ---> C - A"""
+    """Target - A: A + B = C ---> C - B
+    Target - B: A + B = C ---> C - A"""
     n.op.type = TokenType.MINUS
     n.op.value = "-"
 
 def sub_inv(n: BinOp, target: AST):
-    """Solve for A: A - B = C ---> C + B"""
-    """Solve for B: A - B = C ---> C + A"""
+    """Target - A: A - B = C ---> C + B
+    Target - B: A - B = C ---> -(C + A)"""
     n.op.type = TokenType.PLUS
     n.op.value = "+"
 
@@ -77,13 +99,14 @@ class Solver:
 
 
         #TODO: support powers and roots
+        #Roots will be supported via inversed exponnent power...
         #TODO: support trig functions and their inverses
-        #TODO: fix division handling bug: see solver tests
         inverse_op = {
             TokenType.DIV : div_inv,
             TokenType.MUL : mul_inv,
             TokenType.PLUS : add_inv,
             TokenType.MINUS : sub_inv,
+            TokenType.POW : pow_inv
         }
 
         #Glossary:
@@ -129,7 +152,7 @@ class Solver:
                         
                         #leave rest of expression intact
                         #since snode is in there
-                        if isLeft: 
+                        if isLeft:
                             n.parent.left = n.expr
                         else:
                             n.parent.right = n.expr

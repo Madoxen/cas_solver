@@ -1,4 +1,4 @@
-from lexer import Lexer, TokenType
+from lexer import Lexer, TokenType, Token
 # nodes with no children are called leafs
 # general parser structure inspired by: https://ruslanspivak.com/lsbasi-part7/
 class AST:
@@ -6,7 +6,7 @@ class AST:
         self.parent = parent
 
 class BinOp(AST):
-    def __init__(self, left: AST, op, right: AST, parent = None):
+    def __init__(self, left: AST, op: Token, right: AST, parent = None):
         super().__init__(parent)
         self.left = left
         self.token = self.op = op
@@ -69,9 +69,20 @@ class Parser:
         #TODO: more descriptive error message 
         #raise ParserException("Bad syntax")
 
+    def powers(self): 
+        node = self.factor()
+
+        while self.current_token.type == TokenType.POW:
+            token = self.current_token
+            if token.type == TokenType.POW:
+                self.eat(TokenType.POW)
+            
+            node = BinOp(left=node, op=token, right=self.factor())
+        return node
+
     def term(self): 
         """term : factor ((TokenType.MUL | TokenType.DIV) factor)*"""
-        node = self.factor()
+        node = self.powers()
 
         while self.current_token.type in (TokenType.MUL, TokenType.DIV):
             token = self.current_token
@@ -80,7 +91,7 @@ class Parser:
             elif token.type == TokenType.DIV:
                 self.eat(TokenType.DIV)
 
-            node = BinOp(left=node, op=token, right=self.factor())
+            node = BinOp(left=node, op=token, right=self.powers())
 
         return node
 
@@ -100,6 +111,8 @@ class Parser:
             node = BinOp(left=node, op=token, right=self.term())
         return node
 
+
+    #Lowest priority
     def equation(self): 
         node = self.expr()
         while self.current_token.type == TokenType.EQ:
