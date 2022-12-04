@@ -1,7 +1,7 @@
 from functools import reduce
 from typing import List
 from lexer import Token
-from parser import AST, BinOp, Num
+from parser import AST, BinOp, Num, UnaryOp
 
 
 def inorder(tree: AST) -> List[AST]:
@@ -36,6 +36,9 @@ def _trace(root : AST) -> str:
         result.append(root.op.value)
         result.extend(_trace(root.right))
         result.append(")")
+    elif isinstance(root, UnaryOp):
+        result.append(root.op.value)
+        result.append(_trace(root.expr))
     else:
         result.append(str(root.value))
     return ''.join(result)

@@ -1,3 +1,4 @@
+from parser import UnaryOp
 from solver import Solver
 from lexer import TokenType
 
@@ -12,7 +13,7 @@ def test_dfs():
     assert len(res) == 2
 
 
-def test_solver_simple():
+def test_solver_simpler():
     #     =               =                                   
     #    / \             / \                    
     #   +   c    --->   a   -                    
@@ -71,3 +72,25 @@ def test_solver_simple():
     assert r.right.left.left.right.value == 7
 
 
+def test_solver_unary_op():
+    # a / -c = b ---> c = -a/b
+    #     =               =                                   
+    #    / \             / \                    
+    #  div   b    --->  c   -                    
+    #  / \                  /                 
+    # a   -                /   
+    #      \              / \
+    #       c            a   b  
+    s = Solver("a/-c = b")
+    r = s.solve("c")
+
+    assert r.op.type == TokenType.EQ 
+    assert r.left.token.type == TokenType.SYM
+    assert r.right.op.type == TokenType.MINUS
+    assert isinstance(r.right, UnaryOp)
+    assert r.right.expr.op.type == TokenType.DIV
+    assert r.right.expr.left.token.type == TokenType.SYM
+    assert r.right.expr.right.token.type == TokenType.SYM
+    assert r.right.expr.left.value == "a"
+    assert r.right.expr.right.value == "b"
+    assert r.left.value == "c"

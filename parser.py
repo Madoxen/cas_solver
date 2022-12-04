@@ -14,10 +14,13 @@ class BinOp(AST):
         self.left.parent = self
         self.right.parent = self
 
-#Note: num can represent negative values as well
-#Which in current version will lead to something like
-# a - -b
-#TODO: somehow handle this case 
+class UnaryOp(AST):
+    def __init__(self, expr: AST, op, parent = None):
+        super().__init__(parent)
+        self.expr = expr
+        self.token = self.op = op
+        self.expr.parent = self
+
 class Num(AST):
     def __init__(self, token, parent = None):
         super().__init__(parent)
@@ -42,19 +45,29 @@ class Parser:
             raise ParserException("Invalid syntax")
 
     def factor(self):
-        """factor : TokenType.NUM | LPAREN expr RPAREN"""
+        """factor : (PLUS | MINUS) factor | INTEGER | SYMBOL | LPAREN expr RPAREN"""
         token = self.current_token
-        if token.type == TokenType.NUM:
-            self.eat(TokenType.NUM)
-            return Num(token)
-        if token.type == TokenType.SYM:
+        if token.type == TokenType.PLUS:
+            self.eat(TokenType.PLUS)
+            node = UnaryOp(self.factor(), token)
+            return node
+        elif token.type == TokenType.MINUS:
+            self.eat(TokenType.MINUS)
+            node = UnaryOp(self.factor(), token)
+            return node
+        elif token.type == TokenType.SYM:
             self.eat(TokenType.SYM)
+            return Num(token)
+        elif token.type == TokenType.NUM:
+            self.eat(TokenType.NUM)
             return Num(token)
         elif token.type == TokenType.LPAREN:
             self.eat(TokenType.LPAREN)
             node = self.expr()
             self.eat(TokenType.RPAREN)
             return node
+        #TODO: more descriptive error message 
+        #raise ParserException("Bad syntax")
 
     def term(self): 
         """term : factor ((TokenType.MUL | TokenType.DIV) factor)*"""
@@ -78,14 +91,12 @@ class Parser:
         factor : TokenType.NUM | LPAREN expr RPAREN
         """
         node = self.term()
-
         while self.current_token.type in (TokenType.PLUS, TokenType.MINUS):
             token = self.current_token
             if token.type == TokenType.PLUS:
                 self.eat(TokenType.PLUS)
             elif token.type == TokenType.MINUS:
                 self.eat(TokenType.MINUS)
-
             node = BinOp(left=node, op=token, right=self.term())
         return node
 
