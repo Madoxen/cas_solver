@@ -10,11 +10,16 @@ from utils import trace, inorder
 #TODO: build in move operation and add checks against
 #not supported moves
 
-def pow_inv(n: BinOp, target:AST):
+def pow_inv(n: BinOp, wasTargetLeft: bool):
     """
-        Inverses given op
+        Inverses the power operation in the following way: 
+        Target - A: A ^ B = C ---> A = C ^ (1/B)
+        Target - B: NOT SUPPORTED (throws exception)
+        Only left side target is allowed
     """
 
+    if not wasTargetLeft:
+        raise SolverException("Left target power inverse is not supported")
     print("Inverting OP")
     #invert exponent E --> 1/E
     numerator = Num(Token(1, TokenType.NUM), None)
@@ -22,38 +27,45 @@ def pow_inv(n: BinOp, target:AST):
     op_tok = Token("/", TokenType.DIV)
     inverted_exponent = BinOp(numerator, op_tok, denominator, n)
     n.right = inverted_exponent
-    
 
 
-def div_inv(n: BinOp, target: AST):
+def div_inv(n: BinOp, wasTargetLeft: bool):
     """
-    Target - A:  A / B
-    Target - B:  A / B
+    Target - A:  A / B = C ---> A = C * B 
+    Target - B:  A / B = C ---> B = B / C 
     """
 
-    if target == n.right:
+    if not wasTargetLeft:
         #switch right side with left
         n.right, n.left = n.left, n.right
-    elif target == n.left:
+    else:
         #change the op to multiplication
         n.op.type = TokenType.MUL
         n.op.value = "*"
 
-def mul_inv(n: BinOp, target: AST):
-    """Target - A: A * B = C ---> C / B
-    Target - B: A * B = C ---> C / A"""
+def mul_inv(n: BinOp, wasTargetLeft: bool):
+    """Target - A: A * B = C ---> A = C / B
+    Target - B: A * B = C ---> B = C / A"""
     n.op.type = TokenType.DIV
     n.op.value = "/"
 
-def add_inv(n: BinOp, target: AST):
-    """Target - A: A + B = C ---> C - B
-    Target - B: A + B = C ---> C - A"""
+def add_inv(n: BinOp, wasTargetLeft: bool):
+    """Target - A: A + B = C ---> A = C - B
+    Target - B: A + B = C ---> B =  C - A"""
     n.op.type = TokenType.MINUS
     n.op.value = "-"
 
-def sub_inv(n: BinOp, target: AST):
-    """Target - A: A - B = C ---> C + B
-    Target - B: A - B = C ---> -(C + A)"""
+def sub_inv(n: BinOp, wasTargetLeft: bool):
+    """Target - A (wasTargetLeft == True): A - B = C ---> A = C + B
+    Target - B: A - B = C ---> B = -(C + A) ---> -C + A"""
+    
+    if not wasTargetLeft:
+        #if target was left this means that C is on the left side
+        #Add unary to the left side 
+        min_tok = Token("-", TokenType.MINUS)
+        min_uop = UnaryOp(n.left, min_tok, n)
+        n.left = min_uop
+    
     n.op.type = TokenType.PLUS
     n.op.value = "+"
 
@@ -72,7 +84,7 @@ class Solver:
 
         # note: maybe if there is no equals sign, just add "= 0" to the end of equation?
         if self.root.op.type != TokenType.EQ:
-            raise SolverException("Provided string is not an equation")
+            raise SolverException("Provided expression tree does not contain '=' at root element")
 
         # perform DFS to find requested symbol occurences
         # TODO: make sure that left and right subtree are NOT None!!
@@ -183,10 +195,9 @@ class Solver:
 
                     #save reference for old right root child
                     root_right = self.root.right
-                    move_target = None 
                     #choose subtree
                     if n.right == n2:
-                        move_target = n.left
+                        isTargetLeft = False
                         #snode is in right subtree
                         #leave right subtree behind
                         n.right.parent = n.parent
@@ -199,7 +210,7 @@ class Solver:
                         n.right = n.left
                         n.left = root_right
                     else:
-                        move_target = n.right
+                        isTargetLeft = True
                         #snode is in left subtree
                         #leave left subtree behind
                         n.left.parent = n.parent
@@ -220,7 +231,7 @@ class Solver:
                     inv_op = inverse_op.get(n.op.type, False)
                     if not inv_op:
                         raise SolverException(f"Could not find inverse operation for: {n.op.type}")
-                    inv_op(n, move_target) 
+                    inv_op(n, isTargetLeft) 
             
         return self.root
         
