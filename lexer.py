@@ -2,7 +2,6 @@ from enum import Enum
 from typing import List
 
 
-
 class TokenType(Enum):
     BEGIN = -1
     PLUS = 0

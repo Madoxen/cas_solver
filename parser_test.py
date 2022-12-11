@@ -1,4 +1,4 @@
-from parser import Parser
+from equation_parser import Parser
 from lexer import TokenType
 
 def test_parser():

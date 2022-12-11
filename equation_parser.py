@@ -1,9 +1,15 @@
 from lexer import Lexer, TokenType, Token
 # nodes with no children are called leafs
-# general parser structure inspired by: https://ruslanspivak.com/lsbasi-part7/
 class AST:
     def __init__(self, parent):
         self.parent = parent
+
+    def isLeft(self) -> bool:
+        """Returns True if instance of the class is the left node of a parent
+        else False."""
+        if isinstance(self.parent, BinOp):
+            return self == self.parent.left
+        return False
 
 class BinOp(AST):
     def __init__(self, left: AST, op: Token, right: AST, parent = None):

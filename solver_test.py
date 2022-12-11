@@ -1,4 +1,4 @@
-from parser import AST, UnaryOp
+from equation_parser import AST, UnaryOp
 from solver import Solver
 from lexer import TokenType
 from utils import trace

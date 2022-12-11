@@ -1,7 +1,5 @@
 from typing import List
-#dotted module, because there exists already built-in
-#parser module, for accessing python parse trees
-from parser import AST, BinOp, Num, Parser, UnaryOp
+from equation_parser import AST, BinOp, Num, Parser, UnaryOp
 from lexer import Lexer, TokenType, Token
 from utils import trace, inorder
 
@@ -20,7 +18,7 @@ def pow_inv(n: BinOp, wasTargetLeft: bool):
 
     if not wasTargetLeft:
         raise SolverException("Left target power inverse is not supported")
-    print("Inverting OP")
+
     #invert exponent E --> 1/E
     numerator = Num(Token(1, TokenType.NUM), None)
     denominator = n.right
@@ -75,7 +73,6 @@ class SolverException(Exception):
 class Solver:
     def __init__(self, string: str):
         self.root = Parser(string).parse()
-        self.inv_map = {v: k for k, v in Lexer.operators.items()}
 
     def solve(self, symbol: str) -> AST:
         """Solves for given _searched symbol_
@@ -109,9 +106,6 @@ class Solver:
             # Start by finding searched symbol in the subtree
             #some inspiration: https://stackoverflow.com/a/66466263
 
-
-        #TODO: support powers and roots
-        #Roots will be supported via inversed exponnent power...
         #TODO: support trig functions and their inverses
         inverse_op = {
             TokenType.DIV : div_inv,
@@ -139,7 +133,6 @@ class Solver:
         #Move everything that is not an snode
         for snode in left_subtree_snodes:
             path = list(reversed(self.path(snode)))
-            print(list(map(lambda x: x.token.value, path)))
             for n, n2 in zip(path, path[1:]):
                 if n.token.type == TokenType.EQ: #skip equals
                     continue

@@ -1,7 +1,7 @@
 from functools import reduce
 from typing import List
 from lexer import Token
-from parser import AST, BinOp, Num, UnaryOp
+from equation_parser import AST, BinOp, Num, UnaryOp
 
 
 def inorder(tree: AST) -> List[AST]:
