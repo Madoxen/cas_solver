@@ -21,14 +21,14 @@ class BinOp(AST):
         self.right.parent = self
 
 class UnaryOp(AST):
-    def __init__(self, expr: AST, op, parent = None):
+    def __init__(self, expr: AST, op: Token, parent = None):
         super().__init__(parent)
         self.expr = expr
         self.token = self.op = op
         self.expr.parent = self
 
 class Num(AST):
-    def __init__(self, token, parent = None):
+    def __init__(self, token: Token, parent = None):
         super().__init__(parent)
         self.token = token
         self.value = token.value

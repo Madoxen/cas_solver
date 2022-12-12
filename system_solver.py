@@ -14,7 +14,7 @@ class SubstitutionTree:
     def __init__(self, eq, parent = None, children = []) -> None:
         self.parent = parent
         self.equation = eq
-        self.children = []
+        self.children : List[SubstitutionTree] = []
         #equations used in the past
         if parent != None:
             self.used_equations = deepcopy(parent.used_equations)
@@ -47,6 +47,33 @@ def substitute(eq: BinOp, var: str, to: AST):
                 else: 
                     raise SystemSolverException("Equation tree in bad state - num node has a child.")
                     
+
+def isSolution(eq: BinOp) -> bool:
+    """Checks if provided equation is a solution
+
+        For equation to be a solution, the right
+        side of the equation shall contain no SYM tokens
+    """
+    
+    eqright = inorder(eq.right)
+    for n in eqright:
+        if isinstance(n, Num) and n.token.type == TokenType.SYM:
+            return False
+    return True
+    
+
+def getSolution(sub_tree: SubstitutionTree):
+    if isSolution(sub_tree.equation):
+        return sub_tree.equation
+    for c in sub_tree.children:    
+        if isSolution(c.equation):
+            return c.equation
+        else:
+            child_sol = getSolution(c)
+            if child_sol != None and isSolution(child_sol):
+                return child_sol
+    return None #base case for no children and no solution in root
+ 
 
 class SystemSolver:
     def __init__(self):
@@ -208,10 +235,19 @@ class SystemSolver:
         return result
 
 s = SystemSolver()
-s.add_equation("x = z + y")
-s.add_equation("y = z")
-s.add_equation("z = f")
-s.add_equation("y = v")
-s.add_equation("v = 2")
-r = s.solve("x")
-r.print_all()
+# s.add_equation("x = z + y")
+# s.add_equation("y = z")
+# s.add_equation("z = f")
+# s.add_equation("y = v")
+# s.add_equation("v = 2")
+
+# s.add_equation("x = y + z")
+# s.add_equation("y + z = 2")
+# r = s.solve("x")
+s.add_equation("ek = (m*v^2) / 2")
+s.add_equation("p = m*v")
+s.add_equation("p = 10")
+s.add_equation("m = 5")
+
+r = s.solve("ek")
+print(trace(getSolution(r)))
