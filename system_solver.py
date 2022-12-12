@@ -188,7 +188,8 @@ class SystemSolver:
             raise SystemSolverException("Could not find searched symbol")
         
         for ss_eq in ssymbol_equations: 
-            eq = Parser(ss_eq).parse()
+            #Transform equation so that only searched symbol remains on the left side
+            eq = Solver(ss_eq).solve(ssymbol)
             root = SubstitutionTree(eq)
             root.used_equations.append(ss_eq)
             symbols = self.extract_symbols(eq)
@@ -249,5 +250,6 @@ s.add_equation("p = m*v")
 s.add_equation("p = 10")
 s.add_equation("m = 5")
 
-r = s.solve("ek")
+r = s.solve("v")
+r.print_all()
 print(trace(getSolution(r)))
