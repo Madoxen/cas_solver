@@ -81,7 +81,7 @@ def test_solver_sub_right():
     #                   c                              
     s = Solver("a-b=c")
     r = s.solve("b")
-    
+    print(trace(r))
     assert r.op.type == TokenType.EQ 
     assert r.left.token.type == TokenType.SYM
     assert r.left.value == "b"

@@ -245,11 +245,25 @@ s = SystemSolver()
 # s.add_equation("x = y + z")
 # s.add_equation("y + z = 2")
 # r = s.solve("x")
+# s.add_equation("ek = (m*v^2) / 2")
+# s.add_equation("p = m*v")
+# s.add_equation("p = 10")
+# s.add_equation("m = 5")
+
+# r = s.solve("v")
+# r.print_all()
+# print(trace(getSolution(r)))
+
+# s.add_equation("x = z + y")
+# s.add_equation("y = z")
+# s.add_equation("y = v")
+# s.add_equation("v = 2")
+# r = s.solve("x")
 s.add_equation("ek = (m*v^2) / 2")
 s.add_equation("p = m*v")
 s.add_equation("p = 10")
 s.add_equation("m = 5")
-
-r = s.solve("v")
-r.print_all()
+r = s.solve("ek")
 print(trace(getSolution(r)))
+
+    

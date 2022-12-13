@@ -1,7 +1,7 @@
 from typing import List
 from equation_parser import AST, BinOp, Num, Parser, UnaryOp
 from lexer import Lexer, TokenType, Token
-from utils import trace, inorder
+from utils import add_unary_minus, create_div_op, create_num, create_plus_op, trace, inorder
 
 
 #TODO: improve doc strings because they are misleading
@@ -22,8 +22,7 @@ def pow_inv(n: BinOp, wasTargetLeft: bool):
     #invert exponent E --> 1/E
     numerator = Num(Token(1, TokenType.NUM), None)
     denominator = n.right
-    op_tok = Token("/", TokenType.DIV)
-    inverted_exponent = BinOp(numerator, op_tok, denominator, n)
+    inverted_exponent = create_div_op(numerator, denominator, n)
     n.right = inverted_exponent
 
 
@@ -67,6 +66,29 @@ def sub_inv(n: BinOp, wasTargetLeft: bool):
     n.op.type = TokenType.PLUS
     n.op.value = "+"
 
+
+def isPattern(node: AST, pattern: AST):
+    """Checks if a pattern exists treating 
+    node as pattern root"""
+    
+
+
+def collect_add_numbers(op: BinOp):
+    """Searches for the following pattern in the code
+        and applies rule:
+        n + m -> o
+    """
+    pattern = create_plus_op(create_num(), create_num())
+    pass
+
+#Collection search and rewrite rules
+def collect_add_same_symbols(op: BinOp):
+    """Searches for the following pattern in the code
+        and applies rule:
+        nX + mX -> (m+n)X
+    """
+    search_pattern = BinOp()
+    
 class SolverException(Exception):
     pass
 
@@ -227,7 +249,10 @@ class Solver:
                     inv_op(n, isTargetLeft) 
             
         return self.root
-        
+
+    def collect(self):
+        """Applies collection rewrite rules to reduce count of variables"""
+        pass
     
 
     def dfs(self, symbol: str, start_point: AST = None) -> List[AST]:
