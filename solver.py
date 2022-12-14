@@ -2,6 +2,7 @@ from typing import List
 from equation_parser import AST, BinOp, Num, Parser, UnaryOp
 from lexer import Lexer, TokenType, Token
 from utils import add_unary_minus, create_div_op, create_num, create_plus_op, trace, inorder
+import math
 
 
 #TODO: improve doc strings because they are misleading
@@ -67,25 +68,59 @@ def sub_inv(n: BinOp, wasTargetLeft: bool):
     n.op.value = "+"
 
 
-def isPattern(node: AST, pattern: AST):
-    """Checks if a pattern exists treating 
-    node as pattern root"""
-    
 
-
-def collect_add_numbers(op: BinOp):
+def collect_numbers(op: BinOp) -> bool:
     """Searches for the following pattern in the code
         and applies rule:
-        n + m -> o
+        n (+ or - or * or / or ^) m -> o
+
+        returns True if operation was executed
     """
-    pattern = create_plus_op(create_num(), create_num())
-    pass
+
+    try:
+        print(op.token.type, op.left.token.type, op.right.token.type)
+    except:
+        pass
+
+    #Search rule:
+    if not (op.token.type in {TokenType.PLUS, TokenType.MINUS, TokenType.MUL, TokenType.DIV, TokenType.POW}
+    and op.left.token.type == TokenType.NUM
+    and op.right.token.type == TokenType.NUM):
+        return False
+
+    #define concrete operation dict
+    op_dict = {
+        TokenType.PLUS : lambda x,y: x + y,
+        TokenType.MINUS : lambda x,y: x - y,
+        TokenType.MUL : lambda x,y: x * y,
+        TokenType.DIV : lambda x,y: x / y,
+        TokenType.POW : lambda x,y: x ** y
+    }    
+    
+    #apply rule
+    l = op.left
+    r = op.right
+    num = create_num(op_dict[op.token.type](l.value,r.value), op.parent)
+    
+    #change references
+    if isinstance(op.parent, UnaryOp):
+        op.parent.expr = num
+    elif isinstance(op.parent, BinOp):
+        if op.isLeft():
+            op.parent.left = num
+        else:
+            op.parent.right = num
+    else:
+        raise SolverException(f"Tree in bad state, cannot reassign child references from type {type(op.parent)}")
+    return True 
+     
 
 #Collection search and rewrite rules
-def collect_add_same_symbols(op: BinOp):
+def collect_add_same_symbols(op: BinOp) -> bool:
     """Searches for the following pattern in the code
         and applies rule:
         nX + mX -> (m+n)X
+        returns True if operation was executed
     """
     search_pattern = BinOp()
     
@@ -105,6 +140,8 @@ class Solver:
         if self.root.op.type != TokenType.EQ:
             raise SolverException("Provided expression tree does not contain '=' at root element")
 
+        self.collect()
+
         # perform DFS to find requested symbol occurences
         # TODO: make sure that left and right subtree are NOT None!!
         left_subtree_snodes = self.dfs(symbol, self.root.left)
@@ -117,6 +154,7 @@ class Solver:
 
         if len(right_subtree_snodes) == 0 and len(left_subtree_snodes) == 0:
             raise SolverException("Searched symbol was not found in the provided equation")
+
 
         #1. Get all searched symbols to the left side
         #2. Get all not-searched symbols to the right side
@@ -247,12 +285,21 @@ class Solver:
                     if not inv_op:
                         raise SolverException(f"Could not find inverse operation for: {n.op.type}")
                     inv_op(n, isTargetLeft) 
-            
+        #Postprocessing 
+        self.collect()
         return self.root
 
     def collect(self):
         """Applies collection rewrite rules to reduce count of variables"""
-        pass
+        collection_functions = [collect_numbers]
+        rerun = True
+        while rerun:
+            rerun = False
+            for f in collection_functions:
+                tree_inord = inorder(self.root)
+                for node in tree_inord:
+                    print(node.token.type)
+                    rerun |= f(node)
     
 
     def dfs(self, symbol: str, start_point: AST = None) -> List[AST]:

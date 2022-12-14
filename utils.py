@@ -78,7 +78,45 @@ def add_unary_minus(node: AST):
     else:
         parent.right = op
     parent = op
+
+def replace_node(node: AST, new_node: AST):
+    """Replaces node with new_node
+        This operation only makes sense if node and new_node
+        are of the same type
+    """
+
+    if type(node) != type(new_node):
+        raise Exception(f"Node replacement must operate on the same node types. Tried to exchange {type(node)} with {type(new_node)}")
+
+    #replace parent references
+    parent = node.parent
+    if isinstance(parent, UnaryOp):
+        parent.expr = new_node
+    elif node.isLeft():
+        parent.left = new_node
+    else:
+        parent.right = new_node
+
+    #replace child references
+    if isinstance(node, BinOp):
+        l = node.left
+        r = node.right
+
+        new_node.left = l
+        new_node.right = r
+
+        if l:
+            l.parent = new_node
+        if r: 
+            r.parent = new_node
+    elif isinstance(node, UnaryOp):
+        expr = node.expr
+        new_node.expr = expr
+        if expr:
+            expr.parent = new_node
+        
     
+
 
 def test_inorder():
     #    1
