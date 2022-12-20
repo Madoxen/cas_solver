@@ -3,7 +3,7 @@ from copy import deepcopy
 from typing import List
 from equation_parser import AST, BinOp, Num, Parser, UnaryOp
 from lexer import TokenType
-from solver import Solver, collect
+from isolation import Solver, collect
 from utils import create_graphviz_graph, inorder, trace
 
 class SystemSolverException(Exception):
@@ -243,9 +243,9 @@ s = SystemSolver()
 # s.add_equation("y = v")
 # s.add_equation("v = 2")
 
-# s.add_equation("x = y + z")
-# s.add_equation("y + z = 2")
-# r = s.solve("x")
+s.add_equation("x = y + z")
+s.add_equation("y + z = 2")
+r = s.solve("x")
 # s.add_equation("ek = (m*v^2) / 2")
 # s.add_equation("p = m*v")
 # s.add_equation("p = 10")
@@ -260,13 +260,14 @@ s = SystemSolver()
 # s.add_equation("y = v")
 # s.add_equation("v = 2")
 # r = s.solve("x")
-s.add_equation("ek = (m*v^2) / 2")
-s.add_equation("p = m*v")
-s.add_equation("p = 10")
-s.add_equation("m = 5")
-r = s.solve("ek")
-
+# s.add_equation("ek = (m*v^2) / 2")
+# s.add_equation("p = m*v")
+# s.add_equation("p = 10")
+# s.add_equation("m = 5")
+# r = s.solve("ek") 
+create_graphviz_graph(r.children[1].equation, "graph.png")
 sol = getSolution(r)
+
 if sol != None:
     collect(sol)
     print(trace(sol))

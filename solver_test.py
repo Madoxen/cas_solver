@@ -1,5 +1,5 @@
 from equation_parser import AST, UnaryOp
-from solver import Solver
+from isolation import Solver
 from lexer import TokenType
 from utils import trace
 
