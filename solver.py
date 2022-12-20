@@ -73,6 +73,7 @@ def collect_numbers(op: BinOp) -> bool:
 
         returns True if operation was executed
     """
+
     try:
     #Search rule:
         if not (op.token.type in {TokenType.PLUS, TokenType.MINUS, TokenType.MUL, TokenType.DIV, TokenType.POW}
@@ -95,7 +96,7 @@ def collect_numbers(op: BinOp) -> bool:
     l = op.left
     r = op.right
     num = create_num(op_dict[op.token.type](l.value,r.value), op.parent)
-    
+
     #change references
     if isinstance(op.parent, UnaryOp):
         op.parent.expr = num
@@ -212,7 +213,7 @@ class Solver:
         if self.root.op.type != TokenType.EQ:
             raise SolverException("Provided expression tree does not contain '=' at root element")
 
-        self.collect()
+        collect(self.root)
 
         # perform DFS to find requested symbol occurences
         # TODO: make sure that left and right subtree are NOT None!!
@@ -235,7 +236,8 @@ class Solver:
             # - To respect mathematical rules of basic algebra
             # we must use transformations defined in a transformation set
             #
-            # Start by finding searched symbol in the subtree
+            # Start by finding searched symbol in
+            #  the subtree
             #some inspiration: https://stackoverflow.com/a/66466263
 
         #TODO: support trig functions and their inverses
@@ -358,20 +360,9 @@ class Solver:
                         raise SolverException(f"Could not find inverse operation for: {n.op.type}")
                     inv_op(n, isTargetLeft) 
         #Postprocessing 
-        self.collect()
+        collect(self.root)
         return self.root
 
-    def collect(self):
-        """Applies collection rewrite rules to reduce count of variables"""
-        collection_functions = [collect_numbers, collect_add_sub_same_symbols]
-        rerun = True
-        while rerun:
-            rerun = False
-            for f in collection_functions:
-                tree_inord = inorder(self.root)
-                for node in tree_inord:
-                    rerun |= f(node)
-    
 
     def dfs(self, symbol: str, start_point: AST = None) -> List[AST]:
         """Searches the ast tree
@@ -399,3 +390,21 @@ class Solver:
             result.append(curr)
             curr = curr.parent
         return result
+
+
+def collect(root: AST):
+    """Applies collection rewrite rules to reduce count of variables"""
+    collection_functions = [collect_numbers, collect_add_sub_same_symbols]
+    rerun = True
+    while rerun:
+        rerun = False
+        for f in collection_functions:
+            tree_inord = inorder(root)
+            for node in tree_inord:
+                rerun |= f(node)
+
+def attract(self):
+    """Applies attraction rewrite rules to bring same type number and symbol nodes
+    closer together, if rewrite rule decreases amount of arcs between variables/number nodes
+    it will be applied otherwise skipped"""
+    pass

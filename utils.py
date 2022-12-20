@@ -2,7 +2,7 @@ from functools import reduce
 from typing import List
 from lexer import Token, TokenType
 from equation_parser import AST, BinOp, Num, UnaryOp
-
+import pygraphviz
 
 def inorder(tree: AST) -> List[AST]:
     result = []
@@ -19,6 +19,27 @@ def preorder(tree: AST):
 
 def postorder(tree: AST):
     pass
+
+def create_graphviz_graph(root: AST , path: str):
+    G = pygraphviz.AGraph(directed=True)
+    
+    counter = 0
+    lookup = {} 
+    for n in inorder(root):
+        lookup[n] = counter
+        counter += 1
+    
+    for k,v in lookup.items():
+        G.add_node(v, label=k.token.value)
+        if isinstance(k, BinOp):
+            if k.left:
+                G.add_edge(v, lookup[k.left])
+            if k.right:
+                G.add_edge(v, lookup[k.right])
+        elif isinstance(k, UnaryOp):
+            G.add_edge(v, lookup[k.expr])
+    G.layout(prog='dot')
+    G.draw(path)
 
 
 #TODO: Remove redundant parenthesis

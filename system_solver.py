@@ -3,8 +3,8 @@ from copy import deepcopy
 from typing import List
 from equation_parser import AST, BinOp, Num, Parser, UnaryOp
 from lexer import TokenType
-from solver import Solver
-from utils import inorder, trace
+from solver import Solver, collect
+from utils import create_graphviz_graph, inorder, trace
 
 class SystemSolverException(Exception):
     pass
@@ -63,6 +63,7 @@ def isSolution(eq: BinOp) -> bool:
     
 
 def getSolution(sub_tree: SubstitutionTree):
+    print(trace(sub_tree.equation))
     if isSolution(sub_tree.equation):
         return sub_tree.equation
     for c in sub_tree.children:    
@@ -264,6 +265,10 @@ s.add_equation("p = m*v")
 s.add_equation("p = 10")
 s.add_equation("m = 5")
 r = s.solve("ek")
-print(trace(getSolution(r)))
 
-    
+sol = getSolution(r)
+if sol != None:
+    collect(sol)
+    print(trace(sol))
+else:
+    print("No solution found.")
