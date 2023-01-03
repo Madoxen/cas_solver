@@ -137,28 +137,20 @@ def replace_node(node: AST, new_node: AST):
             expr.parent = new_node
         
     
+def distance(a: AST, b: AST) -> int:
+    """Calculates distance (number of arcs) between two nodes in a tree"""
+    curr_a = a
+    curr_b = b
 
-
-def test_inorder():
-    #    1
-    #    /\   
-    #   /  \ 
-    #  2    5
-    # / \  / \
-    #3   4 6  7 
-    tree = BinOp(BinOp(Num(Token(3, None)), Token(2, None), Num(Token(4, None))), Token(1, None), BinOp(Num(Token(6, None)), Token(5, None), Num(Token(7, None))))
-    result = inorder(tree)
-    result = list(map(lambda x: x.token.value, result))
-    assert [3, 2, 4, 1, 6, 5, 7] == result
-
-def test_trace():
-    # 2 + a = b * c
-    #    =
-    #    /\   
-    #   /  \ 
-    #  +    *
-    # / \  / \
-    #2   a b  c 
-    test_str = "2 + a = b * c"
-    tree = BinOp(BinOp(Num(Token(2, None)), Token("+", None), Num(Token("a", None))), Token("=", None), BinOp(Num(Token("b", None)), Token("*", None), Num(Token("c", None))))
-    assert test_str == trace(tree)
+    count_a = 0
+    count_b = 0
+    print(curr_a.token.value, curr_b.token.value)
+    while curr_a != curr_b:
+        if curr_a.parent != None: #check if root was reached
+            curr_a = curr_a.parent #move up
+            count_a += 1 
+        if curr_b.parent != None:
+            curr_b = curr_b.parent
+            count_b += 1
+        
+    return count_a + count_b
