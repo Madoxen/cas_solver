@@ -144,7 +144,6 @@ def distance(a: AST, b: AST) -> int:
 
     count_a = 0
     count_b = 0
-    print(curr_a.token.value, curr_b.token.value)
     while curr_a != curr_b:
         if curr_a.parent != None: #check if root was reached
             curr_a = curr_a.parent #move up

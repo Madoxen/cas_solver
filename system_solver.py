@@ -1,6 +1,7 @@
 from collections import defaultdict
 from copy import deepcopy
 from typing import List
+from attraction import attract
 from equation_parser import AST, BinOp, Num, Parser, UnaryOp
 from lexer import TokenType
 from isolation import Solver, collect
@@ -86,6 +87,7 @@ class SystemSolver:
    
 
     def extract_symbols(self, eq: BinOp) -> List[str]:
+        """Returns list of existing symbols in the equation"""
         tree = inorder(eq)
         result = []
         for n in tree:
@@ -96,6 +98,7 @@ class SystemSolver:
 
 
     def add_equation(self, eq: str):
+        """Add equation to knowledge base"""
         self.equations.append(eq)
         r = Parser(eq).parse()
         tree = inorder(r)
@@ -106,97 +109,23 @@ class SystemSolver:
         
 
     #solve for symbol
-    def solve(self, ssymbol: str):
-        """Symbolicaly solving system of equations is a search problem ?
-
-            Solving system of equations is the same as solving a search problem
-            ""Find a set of substitutions such that the resulting equation will
-            contain only known values
-
-            Example:
-            Solve for x:
-            x = y + z * 2
-            y = 2
-            z = e
-            e = 1
-
-                Available substitutions for equation 1.
-                y = 2
-                z = e
-
-                Apply substitutions:
-                x = 2 + e * 2
-
-                Available substitutions for current equation: 
-                e = 1
-
-                Apply substitutions:
-                x = 2 + 1 * 2 
-
-            End.
-
-            This was somewhat trivial example. Sometimes we can make a 
-            wrong substitution:
-
-            x = y + z * 2
-            y = 2
-            z = f
-            z = e
-            e = 1
-
-                Available substitutions for equation 1.
-                y = 2
-                z = f
-
-                Apply substitutions:
-                x = 2 + f * 2
-
-                Available substitutions for current equation: 
-                None
-
-                Backtrack and choose different option:
-                x = y + z * 2
-
-                Available substitutions for equation 1.
-                y = 2
-                z = e                
-
-                Apply substitutions:
-                x = 2 + e * 2 
-
-                Available substitutions for current equation: 
-                e = 1
-
-                Apply substitutions:
-                x = 2 + 1 * 2 
-
-                End.
-                
-                A certain structure emerges - a tree of substitutions.
-
-                We can represent the above process with a tree
-                                      1
-                                 /    |    \
-                                2     3     4
-                               / \   / \   / \
-                              3   4 2   5 5   2
-                                  |       |
-                                  5       2
-                
-        """
-        ssymbol_equations = self.symbol_eq_lookup.get(ssymbol, None)
-        if ssymbol_equations == None:
-            raise SystemSolverException("Could not find searched symbol")
+    def solve(self, target_symbol: str):
+        #produce list of equations that contain target symbol
+        target_symbol_equations = self.symbol_eq_lookup.get(target_symbol, None)
+        if target_symbol_equations == None:
+            raise SystemSolverException("Could not find searched symbol in the knowledge base")
         
-        for ss_eq in ssymbol_equations: 
-            #Transform equation so that only searched symbol remains on the left side
-            eq = Solver(ss_eq).solve(ssymbol)
+        #Try solving for every target equation
+        for target_symbol_equation in target_symbol_equations: 
+            #Solve for searched symbol
+            eq = Solver(target_symbol_equation).solve(target_symbol)
             root = SubstitutionTree(eq)
-            root.used_equations.append(ss_eq)
+            root.used_equations.append(target_symbol_equation)
             symbols = self.extract_symbols(eq)
-            symbols.remove(ssymbol)
+            symbols.remove(target_symbol)
             #go through every symbol other than searched symbol
             for s in symbols:
+                #get equation that can be used to substitute symbols found in current equation
                 for sub_eq in self.symbol_eq_lookup[s]:
                     if sub_eq in root.used_equations:
                         continue
@@ -207,7 +136,7 @@ class SystemSolver:
                     substitute(cheq, s, sub)
                     child = SubstitutionTree(cheq, root)
                     child.used_equations.append(sub_eq)
-                    child.children.extend(self.child_solve(child, ssymbol))
+                    child.children.extend(self.child_solve(child, target_symbol))
                     root.children.append(child)
         return root
 
@@ -268,6 +197,9 @@ r = s.solve("x")
 create_graphviz_graph(r.children[1].equation, "graph.png")
 sol = getSolution(r)
 
+attract(r.children[1].equation)
+collect(r.children[1].equation)
+print(trace(r.children[1].equation))
 if sol != None:
     collect(sol)
     print(trace(sol))

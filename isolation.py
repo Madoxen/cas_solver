@@ -1,4 +1,5 @@
 from typing import List
+from attraction import attract
 from equation_parser import AST, BinOp, Num, Parser, UnaryOp
 from lexer import Lexer, TokenType, Token
 from utils import add_unary_minus, create_div_op, create_mul_op, create_num, create_plus_op, create_sym, trace, inorder
@@ -83,6 +84,7 @@ class Solver:
         if self.root.op.type != TokenType.EQ:
             raise SolverException("Provided expression tree does not contain '=' at root element")
 
+        attract(self.root)
         collect(self.root)
 
         # perform DFS to find requested symbol occurences
@@ -230,6 +232,7 @@ class Solver:
                         raise SolverException(f"Could not find inverse operation for: {n.op.type}")
                     inv_op(n, isTargetLeft) 
         #Postprocessing 
+        attract(self.root)
         collect(self.root)
         return self.root
 

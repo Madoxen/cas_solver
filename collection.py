@@ -125,7 +125,6 @@ def collect_add_sub_same_symbols(op: BinOp) -> bool:
         raise CollectionException(f"Tree in bad state, cannot reassign child references from type {type(op.parent)}")
     return True 
 
-
     
 
 #Collection search and rewrite rules
@@ -139,7 +138,7 @@ def collect_mul_div_same_symbols(op: BinOp) -> bool:
 
 
 def collect(root: AST):
-    """Applies collection rewrite rules to reduce count of variables"""
+    """Applies collection rewrite rules to reduce count of variables and numbers"""
     collection_functions = [collect_numbers, collect_add_sub_same_symbols]
     rerun = True
     while rerun:
