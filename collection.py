@@ -51,8 +51,45 @@ def collect_numbers(op: BinOp) -> bool:
     return True 
      
 
+def collect_add_sub_same_symbols(op: BinOp):
+    """Searches for the following pattern in the code
+        and applies rule:
+        x (+ or -) x -> x / Nothing
+
+        returns True if operation was executed
+    """
+
+    try:
+    #Search rule:
+        if not (op.token.type in {TokenType.PLUS, TokenType.MINUS}
+        and op.left.token.type == TokenType.SYM
+        and op.right.token.type == TokenType.SYM
+        and op.left.token.value == op.right.token.value):
+            return False
+    except AttributeError:
+        return False
+
+    new_tok = None
+    if op.token.type == TokenType.PLUS:
+        new_tok = create_mul_op(create_num(2), create_sym("x"), op.parent)
+    else: 
+        new_tok = create_num(0, op.parent)
+
+    #change refrences to the new token
+    if isinstance(op.parent, UnaryOp):
+        op.parent.expr = new_tok
+    elif isinstance(op.parent, BinOp):
+        if op.isLeft():
+            op.parent.left = new_tok
+        else:
+            op.parent.right = new_tok
+    else:
+        raise CollectionException(f"Tree in bad state, cannot reassign child references from type {type(op.parent)}")
+    return True 
+
+
 #Collection search and rewrite rules
-def collect_add_sub_same_symbols(op: BinOp) -> bool:
+def collect_add_sub_same_symbols_mul_nums(op: BinOp) -> bool:
     """Searches for the following pattern in the code
         and applies rule:
         nX (+ or -) mX -> (m+n)X
@@ -62,7 +99,6 @@ def collect_add_sub_same_symbols(op: BinOp) -> bool:
 
     #search rule:
     try:
-        root = op
         r = op.right
         l = op.left
         rr = op.right.right
@@ -139,7 +175,7 @@ def collect_mul_div_same_symbols(op: BinOp) -> bool:
 
 def collect(root: AST):
     """Applies collection rewrite rules to reduce count of variables and numbers"""
-    collection_functions = [collect_numbers, collect_add_sub_same_symbols]
+    collection_functions = [collect_numbers, collect_add_sub_same_symbols_mul_nums, collect_add_sub_same_symbols]
     rerun = True
     while rerun:
         rerun = False

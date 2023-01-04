@@ -136,6 +136,32 @@ def replace_node(node: AST, new_node: AST):
         if expr:
             expr.parent = new_node
         
+def swap(a: AST, b:AST):
+    """Swaps two nodes positions in a tree (changes parent and parent links)"""
+    #replace parent references
+    a_parent = a.parent
+    b_parent = b.parent
+    if isinstance(a_parent, UnaryOp):
+        a_parent.expr = b
+    elif isinstance(a_parent, BinOp):
+        if a.isLeft():
+            a_parent.left = b
+        else:
+            a_parent.right = b
+    a.parent = b_parent
+
+    if isinstance(b_parent, UnaryOp):
+        b_parent.expr = a
+    elif isinstance(b_parent, BinOp):
+        if b.isLeft():
+            b_parent.left = a
+        else:
+            b_parent.right = a
+    b.parent = a_parent
+
+    
+
+
     
 def distance(a: AST, b: AST) -> int:
     """Calculates distance (number of arcs) between two nodes in a tree"""

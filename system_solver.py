@@ -194,12 +194,8 @@ r = s.solve("x")
 # s.add_equation("p = 10")
 # s.add_equation("m = 5")
 # r = s.solve("ek") 
-create_graphviz_graph(r.children[1].equation, "graph.png")
 sol = getSolution(r)
 
-attract(r.children[1].equation)
-collect(r.children[1].equation)
-print(trace(r.children[1].equation))
 if sol != None:
     collect(sol)
     print(trace(sol))

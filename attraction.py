@@ -1,7 +1,7 @@
 from copy import deepcopy
 from equation_parser import AST
 from lexer import TokenType
-from utils import create_graphviz_graph, inorder, distance, trace
+from utils import create_graphviz_graph, inorder, distance, swap, trace
 from itertools import combinations, groupby, pairwise, permutations
 
 
@@ -50,11 +50,9 @@ def attract_addition(start_node: AST) -> bool:
     # Apply transformation
     # replace b with c and c with b
     if isLeftSided:
-        start_node.left.right.parent, start_node.right.parent = start_node.right.parent, start_node.left.right.parent
-        start_node.left.right, start_node.right = start_node.right, start_node.left.right
+        swap(start_node.right.left, start_node.left)
     else:
-        start_node.right.left.parent, start_node.left.parent = start_node.left.parent, start_node.right.left.parent
-        start_node.right.left, start_node.left = start_node.left, start_node.right.left
+        swap(start_node.right.left, start_node.left)
 
     # calculate distances again and compare
     new_unknowns_distances = [distance(x, y) for x,y in combinations(unknowns,2)] 
@@ -69,11 +67,9 @@ def attract_addition(start_node: AST) -> bool:
 
     if not success:
         if isLeftSided:
-            start_node.left.right.parent, start_node.right.parent = start_node.right.parent, start_node.left.right.parent
-            start_node.left.right, start_node.right = start_node.right, start_node.left.right
+            swap(start_node.right.left, start_node.left)
         else:
-            start_node.right.left.parent, start_node.left.parent = start_node.left.parent, start_node.right.left.parent
-            start_node.right.left, start_node.left = start_node.left, start_node.right.left
+            swap(start_node.right.left, start_node.left)
     return success
 
 
