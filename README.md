@@ -11,6 +11,14 @@ maths will be supported. Things like basic algebra, trigonometry or exponentials
 
 ## Principles of operation
 
+Project consists of the following modules:
+- Lexer - Converts user provided string into sequence of tokens
+- Parser - Converts sequence of tokens into Abstract Syntax Tree (AST)
+- Attraction - Attracts two, same symbols together, so that Collection can operate
+- Collection - Joins two symbols / numbers together to reduce amount of symbols in the equation
+- Isolation - Isolates searched unknown from the rest of the equation, following the rules of algebra
+
+
 
 
 ## Running the project
