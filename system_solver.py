@@ -26,6 +26,12 @@ class SubstitutionTree:
         print(trace(self.equation))
         for c in self.children:
             c.print_all()
+    
+    def apply(self, func):
+        """Apply function across whole tree"""
+        func(self)
+        for c in self.children: 
+            c.apply(func)
 
 
 
@@ -64,7 +70,6 @@ def isSolution(eq: BinOp) -> bool:
     
 
 def getSolution(sub_tree: SubstitutionTree):
-    print(trace(sub_tree.equation))
     if isSolution(sub_tree.equation):
         return sub_tree.equation
     for c in sub_tree.children:    
@@ -138,6 +143,11 @@ class SystemSolver:
                     child.used_equations.append(sub_eq)
                     child.children.extend(self.child_solve(child, target_symbol))
                     root.children.append(child)
+        root.apply(lambda x: attract(x.equation))
+        root.apply(lambda x: collect(x.equation))
+        attract(root.children[1].equation)
+        collect(root.children[1].equation)
+        print(trace(root.children[1].equation))
         return root
 
     

@@ -16,21 +16,20 @@ def attract_addition(start_node: AST) -> bool:
     #    a   b             a   b
     try:
         # Search rule:
-        isLeftSided = (start_node.token.type in {TokenType.PLUS, TokenType.MINUS}
-                       and start_node.left.token.type in {TokenType.PLUS, TokenType.MINUS}
-                       and start_node.left.right != None
-                       and start_node.left.left != None
-                       and start_node.right != None)
-        isRightSided = (start_node.token.type in {TokenType.PLUS, TokenType.MINUS}
-                        and start_node.right.token.type in {TokenType.PLUS, TokenType.MINUS}
-                        and start_node.right.right != None
-                        and start_node.right.left != None
-                        and start_node.left != None)
+        isLeftSided = all([start_node.token.type in {TokenType.PLUS, TokenType.MINUS}
+                       ,start_node.left.token.type in {TokenType.PLUS, TokenType.MINUS}
+                       ,start_node.left.right != None
+                       ,start_node.left.left != None
+                       ,start_node.right != None])
+        isRightSided = all([start_node.token.type in {TokenType.PLUS, TokenType.MINUS}
+                        ,start_node.right.token.type in {TokenType.PLUS, TokenType.MINUS}
+                        ,start_node.right.right != None
+                        ,start_node.right.left != None
+                        ,start_node.left != None])
         if (isLeftSided or isRightSided) == False:
             return False
     except AttributeError:
         return False
-    # Apply the rule to the copy and check if unknowns are closer together
 
     # Find unknowns in the subtrees of the start_node
     sn_inord = inorder(start_node)
@@ -43,7 +42,6 @@ def attract_addition(start_node: AST) -> bool:
     # Focus on unknowns that have the most nodes in the tree
     unknowns = max(unknowns, key=lambda x: len(x)) 
 
-    # this might explode in complexity!
     # Compute distance array
     unknowns_distances = [distance(x, y) for x,y in combinations(unknowns,2)] 
 

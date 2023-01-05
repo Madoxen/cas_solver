@@ -9,5 +9,5 @@ def test_simple():
     s.add_equation("y = v")
     s.add_equation("v = 2")
     r = s.solve("x")
-    assert trace(getSolution(r)) == "x=(2+2)"
+    assert trace(getSolution(r)) == "x=4"
 
