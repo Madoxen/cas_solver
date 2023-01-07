@@ -173,19 +173,48 @@ def swap(a: AST, b:AST):
 
 
     
-def distance(a: AST, b: AST) -> int:
-    """Calculates distance (number of arcs) between two nodes in a tree"""
+def distance(a: AST, b: AST) -> int | None:
+    """Calculates distance (number of arcs) between two nodes in a tree
+    returns None if there is no path between two nodes"""
+    if a == b:
+        return 0 
+
     curr_a = a
     curr_b = b
 
-    count_a = 0
-    count_b = 0
+    a_path = []
+    b_path = []
     while curr_a != curr_b:
         if curr_a.parent != None: #check if root was reached
             curr_a = curr_a.parent #move up
-            count_a += 1 
+            a_path.append(curr_a)
         if curr_b.parent != None:
             curr_b = curr_b.parent
-            count_b += 1
-        
-    return count_a + count_b
+            b_path.append(curr_b)
+        if curr_a == b:
+            return len(a_path) #b is higher than a, return 
+        if curr_b == a:
+            return len(b_path) #a is higher than b, return
+    
+
+    b_set = set(b_path)
+
+    a_idx = None
+    earliest_node = None
+    for idx, a_node in enumerate(a_path):
+        if a_node in b_set:
+            a_idx = idx
+            earliest_node = a_node
+            break
+
+    if a_idx == None:
+        return None
+
+    #find path length to common earliest intersection
+    b_idx = b_path.index(earliest_node)
+    #The distance between two nodes in a tree is the sum of length of their
+    #paths to the earliest intersection parent. We add +2 to account for python
+    #0-based indexing
+    return a_idx + b_idx + 2 
+
+
