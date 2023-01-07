@@ -3,7 +3,7 @@ from equation_parser import AST, BinOp
 from lexer import TokenType, Token
 from utils import create_graphviz_graph, inorder, distance, swap, trace
 from itertools import combinations, groupby, pairwise, permutations
-from pattern_matcher import match 
+from pattern_matcher import AnyOp, create_compound_binop, match 
 
 # x+y+x -> x+x+y
 def attract_addition(start_node: AST) -> bool:
@@ -16,17 +16,16 @@ def attract_addition(start_node: AST) -> bool:
     #    a   b             a   b
     try:
         # Search rule:
-        left_sided_pattern = BinOp(, Token()) 
-        isLeftSided = all([start_node.token.type in {TokenType.PLUS, TokenType.MINUS}
-                       ,start_node.left.token.type in {TokenType.PLUS, TokenType.MINUS}
-                       ,start_node.left.right != None
-                       ,start_node.left.left != None
-                       ,start_node.right != None])
-        isRightSided = all([start_node.token.type in {TokenType.PLUS, TokenType.MINUS}
-                        ,start_node.right.token.type in {TokenType.PLUS, TokenType.MINUS}
-                        ,start_node.right.right != None
-                        ,start_node.right.left != None
-                        ,start_node.left != None])
+        left_sided_pattern = create_compound_binop({TokenType.PLUS, TokenType.MINUS},
+                                left=create_compound_binop({TokenType.PLUS, TokenType.MINUS}, left=AnyOp(), right=AnyOp()), 
+                                right=AnyOp()) 
+        right_sided_pattern = create_compound_binop({TokenType.PLUS, TokenType.MINUS},
+                                left=AnyOp(), 
+                                right=create_compound_binop({TokenType.PLUS, TokenType.MINUS}, left=AnyOp(), right=AnyOp())) 
+
+        isLeftSided = match(start_node, left_sided_pattern) 
+        isRightSided = match(start_node, right_sided_pattern) 
+                       
         if (isLeftSided or isRightSided) == False:
             return False
     except AttributeError:
@@ -49,7 +48,7 @@ def attract_addition(start_node: AST) -> bool:
     # Apply transformation
     # replace b with c and c with b
     if isLeftSided:
-        swap(start_node.right.left, start_node.left)
+        swap(start_node.left.right, start_node.right)
     else:
         swap(start_node.right.left, start_node.left)
 
@@ -66,7 +65,7 @@ def attract_addition(start_node: AST) -> bool:
 
     if not success:
         if isLeftSided:
-            swap(start_node.right.left, start_node.left)
+            swap(start_node.left.right, start_node.right)
         else:
             swap(start_node.right.left, start_node.left)
     return success
