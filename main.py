@@ -18,6 +18,5 @@ if __name__ == "__main__":
 
     s = Solver(equation_string)
     r = s.solve(solve_for)
-    #create_graphviz_graph(r, "graph.png")
     print(trace(r))
 

@@ -72,6 +72,9 @@ def isSolution(eq: BinOp) -> bool:
 
 
 def getSolution(sub_tree: SubstitutionTree):
+    """Gets solution without any unknowns"""
+    #TODO: relax this method so that it returns solution with least
+    #amount of unknowns
     if isSolution(sub_tree.equation):
         return sub_tree.equation
     for c in sub_tree.children:
@@ -182,9 +185,9 @@ s = SystemSolver()
 # s.add_equation("y = v")
 # s.add_equation("v = 2")
 
-s.add_equation("x = y + z")
-s.add_equation("y + z = 2")
-r = s.solve("x")
+# s.add_equation("x = y + z")
+# s.add_equation("y + z = 2")
+# r = s.solve("x")
 # s.add_equation("ek = (m*v^2) / 2")
 # s.add_equation("p = m*v")
 # s.add_equation("p = 10")
@@ -204,6 +207,11 @@ r = s.solve("x")
 # s.add_equation("p = 10")
 # s.add_equation("m = 5")
 # r = s.solve("ek")
+
+s.add_equation("sin(x) = 2+z")
+s.add_equation("z = sin(y)")
+s.add_equation("y = 1")
+r = s.solve("x")
 sol = getSolution(r)
 
 if sol != None:

@@ -43,6 +43,26 @@ Each token or group of tokens is converted into a tree's node. In our case we ha
 - `UnaryOp` - Shorthand for unary operation, an operation that takes one operand, think functions like sin(x) or simple - operator (like -1)
 - `Num` - Numbers and standalone symbols
 
+### Isolation
+
+Isolation step isolates (duh) the target unknown symbol from the rest of equation.
+What does it mean to isolate? Consider the following example `x+1 = 0`, our target symbol is `x`,
+to obtain the value for the symbol we need to isolate it as follows: `x+1 = 0` --> `x = -1`. Simple right?
+
+Let's do another example: `2*(x+1) = 1`.
+1. `2*(x+1) = 1`
+2. `x+1 = 1/2`
+3. `x = 1/2 - 1`
+
+You might start to see some pattern emerging. To "isolate" given symbol we need to
+take the outermost operation that involves the symbol itself or expression that the symbol is a part of 
+and then move the operation to the right side of the equation and then invert it!. Such "stripping" away
+is done recursively throughout the entire left subtree of the equation.
+
+What about: `2*x+x+1 = 0`? Using our isolation it is impossible to solve because our 
+invariant was: "There is only one occurence of target symbol"!
+
+
 
 ## Running the project
 To run the project simply clone it and then run: `python3 main.py "your_equation" symbol_to_solve_for`

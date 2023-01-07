@@ -10,6 +10,5 @@ def test_basic_attraction():
     attract(tree) 
     assert trace(tree) == "((x+x)+2)=1" 
 
-test_basic_attraction()
 
     
