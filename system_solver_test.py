@@ -11,3 +11,9 @@ def test_simple():
     r = s.solve("x")
     assert trace(getSolution(r)) == "x=4"
 
+def test_recursive():
+    s = SystemSolver()
+    s.add_equation("x = y + z")
+    s.add_equation("y + z = 2")
+    r = s.solve("x")
+    assert trace(getSolution(r)) == "x=2"
