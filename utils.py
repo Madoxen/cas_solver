@@ -10,6 +10,9 @@ def inorder(tree: AST) -> List[AST]:
         result.extend(inorder(tree.left))
         result.append(tree)
         result.extend(inorder(tree.right))
+    elif isinstance(tree, UnaryOp):
+        result.extend(inorder(tree.expr))
+        result.append(tree)
     else:
         result.append(tree)
     return result
