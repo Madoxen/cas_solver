@@ -18,8 +18,33 @@ Project consists of the following modules:
 - Collection - Joins two symbols / numbers together to reduce amount of symbols in the equation
 - Isolation - Isolates searched unknown from the rest of the equation, following the rules of algebra
 
+### Lexer
 
+Lexer converts an equation string into a sequence of tokens. 
+
+For example: `x+1*5-sin(2) = 1` will be converted into: `[SYM, BINOP, NUM, BINOP, NUM, BINOP, SYM, LPAR, NUM, RPAR, BINOP, NUM]`
+
+We will also store values that were found in the equation: `[x, +, 1, *, 5, -, sin, (, 2, ), =, 1]`
+
+That's it for the lexer!
+
+We then can use the sequence to produce AST that encodes logical "flow" of an equation...
+
+### Parser
+
+Parser converts sequence of tokens into Abstract Syntax Tree, which encodes the relationships
+between operations and operands, order of evaluation and automatically handles nested expressions. Below
+you can find an example AST of the following equation: `sin(x+2+y+x) = 1`.
+
+![miau](eq1.png "AST of sin(x+2+y+x) = 1")
+
+Each token or group of tokens is converted into a tree's node. In our case we have the following types:
+- `BinOp` - Shorthand for binary operation, an operation that takes two operands, the usual +, -, *, / etc.
+- `UnaryOp` - Shorthand for unary operation, an operation that takes one operand, think functions like sin(x) or simple - operator (like -1)
+- `Num` - Numbers and standalone symbols
 
 
 ## Running the project
 To run the project simply clone it and then run: `python3 main.py "your_equation" symbol_to_solve_for`
+
+NOTE: not everything is supported, in fact a very fraction of math is supported 
