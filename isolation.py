@@ -68,6 +68,20 @@ def sub_inv(n: BinOp, wasTargetLeft: bool):
     n.op.type = TokenType.PLUS
     n.op.value = "+"
 
+def sin_inv(n: UnaryOp):
+    n.op.value = "asin"
+def cos_inv(n: UnaryOp):
+    n.op.value = "acos"
+def tan_inv(n: UnaryOp):
+    n.op.value = "atan"
+
+def asin_inv(n: UnaryOp):
+    n.op.value = "sin"
+def acos_inv(n: UnaryOp):
+    n.op.value = "cos"
+def atan_inv(n: UnaryOp):
+    n.op.value = "tan"
+
 class SolverException(Exception):
     pass
 
@@ -113,12 +127,21 @@ class Solver:
             #some inspiration: https://stackoverflow.com/a/66466263
 
         #TODO: support trig functions and their inverses
-        inverse_op = {
+        inverse_binops = {
             TokenType.DIV : div_inv,
             TokenType.MUL : mul_inv,
             TokenType.PLUS : add_inv,
             TokenType.MINUS : sub_inv,
             TokenType.POW : pow_inv
+        }
+
+        inverse_unaryops = {
+            "sin" : sin_inv,
+            "cos" : cos_inv,
+            "tan" : tan_inv,
+            "asin" : asin_inv,
+            "acos" : acos_inv,
+            "atan" : atan_inv,
         }
 
         #Glossary:
@@ -169,12 +192,21 @@ class Solver:
                             n.parent.right = n.expr
                         n.expr.parent = n.parent
 
+                        #bypass UnaryOps with PLUS op 
                         if n.op.type == TokenType.PLUS:
                             continue
 
                         #TODO: other unary functions and ops have to be
                         #inversed
-                        #move and invert op to the right of the root
+                        #Invert op for all UnaryOps except of MINUS op which 
+                        #simply is moved to the right of the root
+                        if n.op.type != TokenType.MINUS:
+                            inv_op = inverse_unaryops.get(n.op.value, False)
+                            if not inv_op:
+                                raise SolverException(f"Could not find inverse operation for: {n.op.value}")
+                            inv_op(n) 
+
+                        #move op to the right of the root
                         n.parent = self.root
                         n.expr = self.root.right
                         self.root.right = n
@@ -227,7 +259,7 @@ class Solver:
                     self.root.right = n
 
                     #Inverse the OP
-                    inv_op = inverse_op.get(n.op.type, False)
+                    inv_op = inverse_binops.get(n.op.type, False)
                     if not inv_op:
                         raise SolverException(f"Could not find inverse operation for: {n.op.type}")
                     inv_op(n, isTargetLeft) 

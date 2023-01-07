@@ -63,7 +63,13 @@ class Parser:
             return node
         elif token.type == TokenType.SYM:
             self.eat(TokenType.SYM)
-            return Num(token)
+            if self.current_token.type == TokenType.LPAREN:
+                self.eat(TokenType.LPAREN)
+                node = UnaryOp(self.expr(), Token(token.value, TokenType.FUNC))
+                self.eat(TokenType.RPAREN)
+                return node
+            else:
+                return Num(token)
         elif token.type == TokenType.NUM:
             self.eat(TokenType.NUM)
             return Num(token)
@@ -132,3 +138,9 @@ class Parser:
 
     def parse(self):
         return self.equation()
+
+def parse(string: str):
+    return Parser(string).parse()
+
+
+parse("x=sin(1+2)")

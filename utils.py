@@ -58,10 +58,17 @@ def _trace(root : AST) -> str:
         result.extend(_trace(root.right))
         result.append(")")
     elif isinstance(root, UnaryOp):
+        isFunc = root.op.type == TokenType.FUNC
         result.append(root.op.value)
+        if isFunc:
+            result.append('(')
         result.append(_trace(root.expr))
-    else:
+        if isFunc:
+            result.append(')')
+    elif isinstance(root, Num):
         result.append(str(root.value))
+    else:
+        raise TypeError(f"Cannot trace tree, node type: {type(root)} not supported")
     return ''.join(result)
 
 #Node creation utility functions

@@ -1,7 +1,7 @@
 import sys
-from solver import Solver
+from isolation import Solver
 from lexer import Lexer
-from utils import trace
+from utils import create_graphviz_graph, trace
 
 
 class CLIException(Exception):
@@ -18,4 +18,6 @@ if __name__ == "__main__":
 
     s = Solver(equation_string)
     r = s.solve(solve_for)
+    #create_graphviz_graph(r, "graph.png")
     print(trace(r))
+

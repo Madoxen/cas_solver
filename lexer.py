@@ -14,6 +14,7 @@ class TokenType(Enum):
     EQ = 7
     LPAREN = 8
     RPAREN = 9
+    FUNC = 10
     EOF = 999
 
 
@@ -101,7 +102,7 @@ class Lexer:
             self.current_char = curr_char
             return Token(int(tok), TokenType.NUM)
         
-        #Symbol tokens
+        #Symbol and tokens
         if self.current_char.isalpha():
             curr_char = self.current_char
             pos = self.current_pos
@@ -126,4 +127,3 @@ class Lexer:
             char_op = self.current_char
             self._next_char() #Advance character pointer
             return Token(char_op, op)
-    
