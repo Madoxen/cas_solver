@@ -145,9 +145,6 @@ class SystemSolver:
                     root.children.append(child)
         root.apply(lambda x: attract(x.equation))
         root.apply(lambda x: collect(x.equation))
-        attract(root.children[1].equation)
-        collect(root.children[1].equation)
-        print(trace(root.children[1].equation))
         return root
 
     
@@ -207,7 +204,6 @@ r = s.solve("x")
 sol = getSolution(r)
 
 if sol != None:
-    collect(sol)
     print(trace(sol))
 else:
     print("No solution found.")
