@@ -8,8 +8,6 @@ def test_basic_attraction():
     #in event of parser failures
     tree = Parser("x+2+x=1").parse()
     attract(tree) 
-    print(trace(tree))
-    assert True == True
+    assert trace(tree) == "((x+x)+2)=1" 
 
-test_basic_attraction()
     

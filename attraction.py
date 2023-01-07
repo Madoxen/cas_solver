@@ -1,9 +1,9 @@
 from copy import deepcopy
-from equation_parser import AST
-from lexer import TokenType
+from equation_parser import AST, BinOp
+from lexer import TokenType, Token
 from utils import create_graphviz_graph, inorder, distance, swap, trace
 from itertools import combinations, groupby, pairwise, permutations
-
+from pattern_matcher import match 
 
 # x+y+x -> x+x+y
 def attract_addition(start_node: AST) -> bool:
@@ -16,6 +16,7 @@ def attract_addition(start_node: AST) -> bool:
     #    a   b             a   b
     try:
         # Search rule:
+        left_sided_pattern = BinOp(, Token()) 
         isLeftSided = all([start_node.token.type in {TokenType.PLUS, TokenType.MINUS}
                        ,start_node.left.token.type in {TokenType.PLUS, TokenType.MINUS}
                        ,start_node.left.right != None
