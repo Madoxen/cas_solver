@@ -88,6 +88,10 @@ def create_mul_op(left: AST, right: AST, parent: AST | None = None) -> BinOp:
 def create_div_op(left: AST, right: AST, parent: AST | None = None) -> BinOp:
     return BinOp(left, Token('/', TokenType.DIV), right, parent)
 
+def create_pow_op(left: AST, right: AST, parent: AST | None = None) -> BinOp:
+    result = BinOp(left, Token('^', TokenType.POW), right, parent)
+    return result
+
 def create_num(num: int | float = 0, parent: AST | None = None) -> Num:
     return Num(Token(num, TokenType.NUM), parent)
 

@@ -6,12 +6,18 @@ from itertools import combinations, groupby, pairwise, permutations
 from pattern_matcher import AnyOp, create_compound_binop, match 
 
 # x+y+x -> x+x+y
-def attract_addition(start_node: AST) -> bool:
+def attract_add_sub_mul(start_node: AST) -> bool:
     # search for pattern from start node
     # The following pattern is searched
     #        +-            +-
     #       / \           / \
     #      +-  c   OR    c   +-
+    #     / \               / \
+    #    a   b             a   b
+    #              OR
+    #        *             *
+    #       / \           / \
+    #      *  c   OR    c    *
     #     / \               / \
     #    a   b             a   b
     try:
@@ -23,10 +29,24 @@ def attract_addition(start_node: AST) -> bool:
                                 left=AnyOp(), 
                                 right=create_compound_binop({TokenType.PLUS, TokenType.MINUS}, left=AnyOp(), right=AnyOp())) 
 
-        isLeftSided = match(start_node, left_sided_pattern) 
-        isRightSided = match(start_node, right_sided_pattern) 
+        left_sided_pattern_mul = create_compound_binop({TokenType.MUL},
+                                left=create_compound_binop({TokenType.MUL}, left=AnyOp(), right=AnyOp()), 
+                                right=AnyOp()) 
+                                
+        right_sided_pattern_mul = create_compound_binop({TokenType.MUL},
+                                left=AnyOp(), 
+                                right=create_compound_binop({TokenType.MUL}, left=AnyOp(), right=AnyOp())) 
+
+        left_sided = match(start_node, left_sided_pattern) 
+        right_sided = match(start_node, right_sided_pattern) 
+
+        left_sided_mul = match(start_node, left_sided_pattern_mul) 
+        right_sided_mul = match(start_node, right_sided_pattern_mul) 
                        
-        if (isLeftSided or isRightSided) == False:
+        left_sided = left_sided or left_sided_mul
+        right_sided = right_sided or right_sided_mul
+
+        if (left_sided or right_sided) == False:
             return False
     except AttributeError:
         return False
@@ -47,7 +67,7 @@ def attract_addition(start_node: AST) -> bool:
 
     # Apply transformation
     # replace b with c and c with b
-    if isLeftSided:
+    if left_sided:
         swap(start_node.left.right, start_node.right)
     else:
         swap(start_node.right.left, start_node.left)
@@ -64,7 +84,7 @@ def attract_addition(start_node: AST) -> bool:
     success = any(x < 0 for x in distance_difference) 
 
     if not success:
-        if isLeftSided:
+        if left_sided:
             swap(start_node.left.right, start_node.right)
         else:
             swap(start_node.right.left, start_node.left)
@@ -76,7 +96,7 @@ def attract(root: AST):
     closer together, if rewrite rule decreases amount of arcs between variables/number nodes
     it will be applied otherwise skipped"""
 
-    attraction_functions = [attract_addition]
+    attraction_functions = [attract_add_sub_mul]
     rerun = True
     while rerun:
         rerun = False
