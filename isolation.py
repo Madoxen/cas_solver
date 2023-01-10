@@ -114,6 +114,8 @@ class Solver:
         if len(right_subtree_snodes) == 0 and len(left_subtree_snodes) == 0:
             raise SolverException("Searched symbol was not found in the provided equation")
 
+        if len(left_subtree_snodes) > 1:
+            raise SolverException("Multiple unknown occurences after initial collection, solving not supported")
 
         #1. Get all searched symbols to the left side
         #2. Get all not-searched symbols to the right side
@@ -148,14 +150,6 @@ class Solver:
         #OP - short for operation (+, -, *, sin() etc.)
         #snode - searched node eg. the node that we search for
 
-        # high level idea
-        # get traces to the searched symbols
-        # - along the trace apply :inverse move: to the right side
-        # while choosing the appropiate subtrees that do not
-        # contain the searched node (snode). Those subtrees
-        # will be moved together with OP node
-
-        
         #TODO: support multiple searched nodes
         #TODO REFACTOR: put inverse move into the function
         #go through all searched nodes
@@ -183,7 +177,6 @@ class Solver:
                     root_right = self.root.right
                     #Searched node is in the expression of the unary operator
                     if n2 == n.expr:
-                        
                         #leave rest of expression intact
                         #since snode is in there
                         if isLeft:

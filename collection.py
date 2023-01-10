@@ -220,6 +220,56 @@ def collect_mul_same_symbols(op: BinOp) -> bool:
     return True 
 
     
+def collect_mul_same_symbols_with_pows(op: BinOp) -> bool:
+    """Searches for the following pattern in the code
+        and applies rule:
+        X^n * X^m -> X^(n+m)
+        X^n / X^m -> X^(n-m)
+        returns True if operation was executed
+    """
+
+    #Search for the following patterns:
+    #
+    #          */              */
+    #       /     \           /  \
+    #      ^       ^    OR  SYM  SYM 
+    #     / \     / \
+    #   SYM NUM SYM NUM
+    #
+    #     */
+    #    /  \
+    #  SYM  SYM 
+
+    pattern = create_compound_binop({TokenType.MUL, TokenType.DIV},
+    left=create_sym("ANY"),
+    right=create_sym("ANY"))
+
+    if not match(op, pattern): 
+        return False
+    
+    if not op.left.value == op.right.value:
+        return False
+    
+    symbol = op.left.value
+
+    #Create POW op
+    pow_op = create_pow_op(
+        parent = op.parent,
+        left = create_sym(symbol), 
+        right = create_num(2) 
+    ) 
+
+    #Replace original op with POW op
+    if isinstance(op.parent, UnaryOp):
+        op.parent.expr = pow_op
+    elif isinstance(op.parent, BinOp):
+        if op.isLeft():
+            op.parent.left = pow_op
+        else:
+            op.parent.right = pow_op
+    else:
+        raise CollectionException(f"Tree in bad state, cannot reassign child references from type {type(op.parent)}")
+    return True 
 
 def collect(root: AST):
     """Applies collection rewrite rules to reduce count of variables and numbers"""
