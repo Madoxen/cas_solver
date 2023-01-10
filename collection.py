@@ -168,22 +168,15 @@ def collect_add_sub_same_symbols_mul_nums(op: BinOp) -> bool:
     
 
 #Collection search and rewrite rules
-def collect_mul_same_symbols(op: BinOp) -> bool:
+def collect_mul_div_same_symbols(op: BinOp) -> bool:
     """Searches for the following pattern in the code
         and applies rule:
-        X^n * X^m -> X^(n+m)
-        X^n / X^m -> X^(n-m)
+        X * X -> X^2
+        X / X -> 1
         returns True if operation was executed
     """
 
     #Search for the following patterns:
-    #
-    #          */              */
-    #       /     \           /  \
-    #      ^       ^    OR  SYM  SYM 
-    #     / \     / \
-    #   SYM NUM SYM NUM
-    #
     #     */
     #    /  \
     #  SYM  SYM 
@@ -198,23 +191,27 @@ def collect_mul_same_symbols(op: BinOp) -> bool:
     if not op.left.value == op.right.value:
         return False
     
+
     symbol = op.left.value
 
-    #Create POW op
-    pow_op = create_pow_op(
-        parent = op.parent,
-        left = create_sym(symbol), 
-        right = create_num(2) 
-    ) 
+    if op.token.type == TokenType.DIV:
+        new_op = create_num(1, op.parent)
+    else:
+        #Create POW op
+        new_op = create_pow_op(
+            parent = op.parent,
+            left = create_sym(symbol), 
+            right = create_num(2) 
+        ) 
 
     #Replace original op with POW op
     if isinstance(op.parent, UnaryOp):
-        op.parent.expr = pow_op
+        op.parent.expr = new_op
     elif isinstance(op.parent, BinOp):
         if op.isLeft():
-            op.parent.left = pow_op
+            op.parent.left = new_op
         else:
-            op.parent.right = pow_op
+            op.parent.right = new_op
     else:
         raise CollectionException(f"Tree in bad state, cannot reassign child references from type {type(op.parent)}")
     return True 
@@ -273,7 +270,7 @@ def collect_mul_same_symbols_with_pows(op: BinOp) -> bool:
 
 def collect(root: AST):
     """Applies collection rewrite rules to reduce count of variables and numbers"""
-    collection_functions = [collect_numbers, collect_add_sub_same_symbols_mul_nums, collect_add_sub_same_symbols, collect_mul_same_symbols]
+    collection_functions = [collect_numbers, collect_add_sub_same_symbols_mul_nums, collect_add_sub_same_symbols, collect_mul_div_same_symbols]
     rerun = True
     while rerun:
         rerun = False
