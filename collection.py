@@ -2,7 +2,7 @@
 from equation_parser import AST, BinOp, UnaryOp
 from lexer import TokenType
 from pattern_matcher import AnyOp, create_compound_binop, match
-from utils import create_mul_op, create_num, create_pow_op, create_sym, inorder
+from utils import create_mul_op, create_num, create_plus_op, create_pow_op, create_sym, inorder, replace
 
 
 class CollectionException(Exception):
@@ -88,6 +88,54 @@ def collect_add_sub_same_symbols(op: BinOp):
         raise CollectionException(f"Tree in bad state, cannot reassign child references from type {type(op.parent)}")
     return True 
 
+def collect_add_sub_same_symbols_pow_mul_nums(op: BinOp) -> bool:
+    """Searches for the following pattern in code and applies rule:
+        n*X^a +/- m*X^a --> (m+n)*X^a"""
+
+    pattern = create_compound_binop({TokenType.PLUS, TokenType.MINUS},
+        left=create_mul_op(
+            left=create_num(),
+            right=create_pow_op(
+                left=create_sym(),
+                right=create_num(),
+            )
+        ),
+        right=create_mul_op(
+            left=create_num(),
+            right=create_pow_op(
+                left=create_sym(),
+                right=create_num(),
+            )))
+    
+    if not match(op, pattern):
+        return False
+
+
+    #See if powers are the same
+    if op.left.right.right.value != op.right.right.right.value:
+        return False
+    
+    #See if symbols are the same 
+    if op.left.right.left.value != op.right.right.left.value:
+        return False
+
+    n = op.left.left.value
+    m = op.right.left.value
+    sym = op.left.right.left.value
+    power = op.left.right.right.value
+
+    print(n,m,sym,power)
+    #create replacement
+    new_op = create_mul_op(
+        left = create_num(m+n),
+        right = create_pow_op(
+            left = create_sym(sym),
+            right = create_num(power) 
+        )
+    )
+
+    replace(op, new_op)
+    return True
 
 #Collection search and rewrite rules
 def collect_add_sub_same_symbols_mul_nums(op: BinOp) -> bool:
@@ -282,7 +330,7 @@ def collect_mul_same_symbols_with_pows(op: BinOp) -> bool:
 
 def collect(root: AST):
     """Applies collection rewrite rules to reduce count of variables and numbers"""
-    collection_functions = [collect_numbers, collect_mul_same_symbols_with_pows, collect_add_sub_same_symbols_mul_nums, collect_add_sub_same_symbols, collect_mul_div_same_symbols]
+    collection_functions = [collect_numbers, collect_mul_same_symbols_with_pows, collect_add_sub_same_symbols_mul_nums, collect_add_sub_same_symbols, collect_mul_div_same_symbols, collect_add_sub_same_symbols_pow_mul_nums]
     rerun = True
     while rerun:
         rerun = False

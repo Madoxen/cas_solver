@@ -26,8 +26,12 @@ def postprocess_trivial_mul(start_node: AST):
 
     if match(start_node, pattern_right):
         replacement = start_node.right
+        if start_node.left.value != 1:
+            return False
     elif match(start_node, pattern_left):
         replacement = start_node.left
+        if start_node.right.value != 1:
+            return False
     else:
         return False
 
@@ -44,6 +48,8 @@ def postprocess_trivial_power(start_node: AST):
 
     if match(start_node, pattern):
         replacement = start_node.left
+        if start_node.right.value != 1:
+            return False
     else:
         return False
 
