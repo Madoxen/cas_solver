@@ -95,7 +95,7 @@ def create_pow_op(left: AST, right: AST, parent: AST | None = None) -> BinOp:
 def create_num(num: int | float = 0, parent: AST | None = None) -> Num:
     return Num(Token(num, TokenType.NUM), parent)
 
-def create_sym(sym: int | float | str, parent: AST | None = None) -> Num:
+def create_sym(sym: int | float | str = "", parent: AST | None = None) -> Num:
     return Num(Token(sym, TokenType.SYM), parent)
 
 def create_minus_unary(expr: AST, parent : AST | None = None):
@@ -114,41 +114,20 @@ def add_unary_minus(node: AST):
         parent.right = op
     parent = op
 
-def replace_node(node: AST, new_node: AST):
-    """Replaces node with new_node
-        This operation only makes sense if node and new_node
-        are of the same type
-    """
-
-    if type(node) != type(new_node):
-        raise Exception(f"Node replacement must operate on the same node types. Tried to exchange {type(node)} with {type(new_node)}")
-
-    #replace parent references
-    parent = node.parent
-    if isinstance(parent, UnaryOp):
-        parent.expr = new_node
-    elif node.isLeft():
-        parent.left = new_node
+def replace(original_op, new_op):
+    """Replaces original_op with new_op and updateds parent references"""
+    if isinstance(original_op.parent, UnaryOp):
+        original_op.parent.expr = new_op
+    elif isinstance(original_op.parent, BinOp):
+        if original_op.isLeft():
+            original_op.parent.left = new_op
+        else:
+            original_op.parent.right = new_op
     else:
-        parent.right = new_node
+        raise Exception(f"Cannot reassign child references from type {type(original_op.parent)}")
+    new_op.parent = original_op.parent
 
-    #replace child references
-    if isinstance(node, BinOp):
-        l = node.left
-        r = node.right
 
-        new_node.left = l
-        new_node.right = r
-
-        if l:
-            l.parent = new_node
-        if r: 
-            r.parent = new_node
-    elif isinstance(node, UnaryOp):
-        expr = node.expr
-        new_node.expr = expr
-        if expr:
-            expr.parent = new_node
         
 def swap(a: AST, b:AST):
     """Swaps two nodes positions in a tree (changes parent and parent links)"""

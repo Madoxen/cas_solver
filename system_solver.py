@@ -194,13 +194,13 @@ s = SystemSolver()
 # s.add_equation("m = 5")
 # r = s.solve("ek")
 
-s.add_equation("sin(x) = 2+z")
-s.add_equation("z = sin(y)")
-s.add_equation("y = 1")
-r = s.solve("x")
-sol = getSolution(r)
+# s.add_equation("sin(x) = 2+z")
+# s.add_equation("z = sin(y)")
+# s.add_equation("y = 1")
+# r = s.solve("x")
+# sol = getSolution(r)
 
-if sol != None:
-    print(trace(sol))
-else:
-    print("No solution found.")
+# if sol != None:
+#     print(trace(sol))
+# else:
+#     print("No solution found.")

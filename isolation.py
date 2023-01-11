@@ -2,6 +2,8 @@ from typing import List
 from attraction import attract
 from equation_parser import AST, BinOp, Num, Parser, UnaryOp
 from lexer import Lexer, TokenType, Token
+from postprocessing import postprocess
+from preprocessing import preprocess
 from utils import add_unary_minus, create_div_op, create_mul_op, create_num, create_plus_op, create_sym, trace, inorder
 from collection import collect
 import math
@@ -98,8 +100,10 @@ class Solver:
         if self.root.op.type != TokenType.EQ:
             raise SolverException("Provided expression tree does not contain '=' at root element")
 
+        preprocess(self.root)
         attract(self.root)
         collect(self.root)
+        postprocess(self.root)
 
         # perform DFS to find requested symbol occurences
         # TODO: make sure that left and right subtree are NOT None!!
@@ -150,8 +154,6 @@ class Solver:
         #OP - short for operation (+, -, *, sin() etc.)
         #snode - searched node eg. the node that we search for
 
-        #TODO: support multiple searched nodes
-        #TODO REFACTOR: put inverse move into the function
         #go through all searched nodes
         #Move everything that is not an snode
         for snode in left_subtree_snodes:
@@ -162,9 +164,7 @@ class Solver:
 
                 #determine if current node is left or right
                 #node of the parent
-                isLeft = False 
-                if n.parent.left == n:
-                    isLeft = True
+                isLeft = n.isLeft() 
 
                 if isinstance(n, UnaryOp):
                     #move symbol and the subtree that 
@@ -257,8 +257,10 @@ class Solver:
                         raise SolverException(f"Could not find inverse operation for: {n.op.type}")
                     inv_op(n, isTargetLeft) 
         #Postprocessing 
+        preprocess(self.root)
         attract(self.root)
         collect(self.root)
+        postprocess(self.root)
         return self.root
 
 

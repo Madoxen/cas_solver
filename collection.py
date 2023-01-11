@@ -227,50 +227,62 @@ def collect_mul_same_symbols_with_pows(op: BinOp) -> bool:
 
     #Search for the following patterns:
     #
-    #          */              */
-    #       /     \           /  \
-    #      ^       ^    OR  SYM  SYM 
+    #          */       
+    #       /     \     
+    #      ^       ^    
     #     / \     / \
     #   SYM NUM SYM NUM
-    #
-    #     */
-    #    /  \
-    #  SYM  SYM 
 
     pattern = create_compound_binop({TokenType.MUL, TokenType.DIV},
-    left=create_sym("ANY"),
-    right=create_sym("ANY"))
+    left=create_pow_op(
+        left=create_sym(),
+        right=create_num()
+    ),
+    right=create_pow_op(
+        left=create_sym(),
+        right=create_num()
+    ))
 
     if not match(op, pattern): 
         return False
-    
-    if not op.left.value == op.right.value:
-        return False
-    
-    symbol = op.left.value
 
-    #Create POW op
-    pow_op = create_pow_op(
-        parent = op.parent,
-        left = create_sym(symbol), 
-        right = create_num(2) 
-    ) 
+    # Symbol equality check
+    if not op.left.left.value == op.right.left.value:
+        return False
+
+    symbol = op.left.left.value
+
+    if op.token.type == TokenType.MUL:
+        #what about unary minus here???? 
+        new_op = create_pow_op(
+            parent = op.parent,
+            left = create_sym(symbol), 
+            right = create_num(op.left.right.value + op.right.right.value) 
+        ) 
+    else:
+        #what about unary minus here???? 
+        new_op = create_pow_op(
+            parent = op.parent,
+            left = create_sym(symbol), 
+            right = create_num(op.left.right.value - op.right.right.value) 
+        ) 
+
 
     #Replace original op with POW op
     if isinstance(op.parent, UnaryOp):
-        op.parent.expr = pow_op
+        op.parent.expr = new_op
     elif isinstance(op.parent, BinOp):
         if op.isLeft():
-            op.parent.left = pow_op
+            op.parent.left = new_op
         else:
-            op.parent.right = pow_op
+            op.parent.right = new_op
     else:
         raise CollectionException(f"Tree in bad state, cannot reassign child references from type {type(op.parent)}")
     return True 
 
 def collect(root: AST):
     """Applies collection rewrite rules to reduce count of variables and numbers"""
-    collection_functions = [collect_numbers, collect_add_sub_same_symbols_mul_nums, collect_add_sub_same_symbols, collect_mul_div_same_symbols]
+    collection_functions = [collect_numbers, collect_mul_same_symbols_with_pows, collect_add_sub_same_symbols_mul_nums, collect_add_sub_same_symbols, collect_mul_div_same_symbols]
     rerun = True
     while rerun:
         rerun = False
