@@ -1,5 +1,7 @@
 from lexer import Lexer, TokenType, Token
 # nodes with no children are called leafs
+
+
 class AST:
     def __init__(self, parent):
         self.parent = parent
@@ -11,8 +13,9 @@ class AST:
             return self == self.parent.left
         return False
 
+
 class BinOp(AST):
-    def __init__(self, left: AST, op: Token, right: AST, parent = None):
+    def __init__(self, left: AST, op: Token, right: AST, parent=None):
         super().__init__(parent)
         self.left = left
         self.token = self.op = op
@@ -20,29 +23,34 @@ class BinOp(AST):
         self.left.parent = self
         self.right.parent = self
 
+
 class UnaryOp(AST):
-    def __init__(self, expr: AST, op: Token, parent = None):
+    def __init__(self, expr: AST, op: Token, parent=None):
         super().__init__(parent)
         self.expr = expr
         self.token = self.op = op
         self.expr.parent = self
 
+
 class Num(AST):
-    def __init__(self, token: Token, parent = None):
+    def __init__(self, token: Token, parent=None):
         super().__init__(parent)
         self.token = token
         self.value = token.value
 
+
 class ParserException(Exception):
     pass
 
-#TODO: Add missing token implementation exceptions for missing token types
+# TODO: Add missing token implementation exceptions for missing token types
+
+
 class Parser:
     def __init__(self, string):
         self.tokens = Lexer().lex(string)
         self.current_token = self.tokens[0]
         self.pos = 0
-    
+
     def eat(self, type):
         if self.current_token.type == type:
             self.pos += 1
@@ -78,21 +86,21 @@ class Parser:
             node = self.expr()
             self.eat(TokenType.RPAREN)
             return node
-        #TODO: more descriptive error message 
+        # TODO: more descriptive error message
         #raise ParserException("Bad syntax")
 
-    def powers(self): 
+    def powers(self):
         node = self.factor()
 
         while self.current_token.type == TokenType.POW:
             token = self.current_token
             if token.type == TokenType.POW:
                 self.eat(TokenType.POW)
-            
+
             node = BinOp(left=node, op=token, right=self.factor())
         return node
 
-    def term(self): 
+    def term(self):
         """term : factor ((TokenType.MUL | TokenType.DIV) factor)*"""
         node = self.powers()
 
@@ -123,21 +131,20 @@ class Parser:
             node = BinOp(left=node, op=token, right=self.term())
         return node
 
-
-    #Lowest priority
-    def equation(self): 
+    # Lowest priority
+    def equation(self):
         node = self.expr()
         while self.current_token.type == TokenType.EQ:
             token = self.current_token
             if token.type == TokenType.EQ:
                 self.eat(TokenType.EQ)
-            #Equation should be the root of the expression tree
+            # Equation should be the root of the expression tree
             node = BinOp(left=node, op=token, right=self.expr(), parent=None)
         return node
 
-
     def parse(self):
         return self.equation()
+
 
 def parse(string: str):
     return Parser(string).parse()

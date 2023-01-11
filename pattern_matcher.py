@@ -9,6 +9,7 @@ class AnyOp(AST):
     Using AnyOp node indicates that the given query only checks existance of
     the node, and terminates further search on given branch from the point of encountering the AnyOp node.
     This is due to the fact that AnyOp could represent Num node, which does not have any children"""
+
     def __init__(self):
         self.token = Token("ANY", MatcherWildcardTokenType)
         pass
@@ -56,7 +57,7 @@ def match(start: AST | None, pattern: AST | None) -> bool:
     result = True
 
     if start != None and isinstance(pattern, AnyOp):
-        pass #If current pattern node is a wildcard, check for start existance
+        pass  # If current pattern node is a wildcard, check for start existance
     elif isinstance(start, BinOp) and isinstance(pattern, BinOp):
         # match subtrees
         if pattern.left != None:  # if none -> dont care about left subtree
@@ -68,7 +69,7 @@ def match(start: AST | None, pattern: AST | None) -> bool:
         if pattern.expr != None:
             result &= match(start.expr, pattern.expr)
     elif isinstance(start, Num) and isinstance(pattern, Num):
-        pass 
+        pass
     else:
         return False
 

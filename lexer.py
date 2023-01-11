@@ -18,17 +18,19 @@ class TokenType(Enum):
     EOF = 999
 
 
-class Token: 
+class Token:
     def __init__(self, value, type):
         self.value = value
         self.type = type
 
+
 class LexerException(Exception):
-    pass        
+    pass
+
 
 class Lexer:
     """Converts string input into tokens
-    
+
     - Consecutive numbers like 3, 2313 or 3.14 are converted into NUM
     - Symbols -, +, *, /, ^ are converted, respectively, into MINUS, PLUS, MUL, DIV, POW
     - Parenthesis (, ) are converted, respectively, into LPAREN, RPAREN
@@ -37,19 +39,19 @@ class Lexer:
     """
 
     operators = {
-        '+' : TokenType.PLUS,
-        '-' : TokenType.MINUS,
-        '*' : TokenType.MUL,
-        '/' : TokenType.DIV,
-        '^' : TokenType.POW,
-        '=' : TokenType.EQ,
-        '(' : TokenType.LPAREN,
-        ')' : TokenType.RPAREN
+        '+': TokenType.PLUS,
+        '-': TokenType.MINUS,
+        '*': TokenType.MUL,
+        '/': TokenType.DIV,
+        '^': TokenType.POW,
+        '=': TokenType.EQ,
+        '(': TokenType.LPAREN,
+        ')': TokenType.RPAREN
     }
 
     def __init__(self):
         self.current_char = None
-        self.current_token = Token("",TokenType.BEGIN)
+        self.current_token = Token("", TokenType.BEGIN)
         self.current_pos = 0
         self.string = ""
         self.max_pos = 0
@@ -58,7 +60,7 @@ class Lexer:
         self.current_pos += 1
         if self.current_pos < self.max_pos:
             self.current_char = self.string[self.current_pos]
-        else: 
+        else:
             self.current_char = "\0"
 
     def lex(self, string: str) -> List[Token]:
@@ -71,12 +73,12 @@ class Lexer:
             result.append(self.current_token)
         return result
 
-    #TODO: refactor, extract functions processing
-    #different parts.
-    #TODO: add more diagnostics, exceptions
+    # TODO: refactor, extract functions processing
+    # different parts.
+    # TODO: add more diagnostics, exceptions
     def _get_next_token(self) -> Token:
-        #Skip spaces
-        #TODO: support for other white spaces
+        # Skip spaces
+        # TODO: support for other white spaces
         if self.current_char == ' ':
             while self.current_char == ' ':
                 self._next_char()
@@ -84,13 +86,13 @@ class Lexer:
         if self.current_pos >= len(self.string):
             return Token("\0", TokenType.EOF)
 
-        #Number tokens
+        # Number tokens
         if self.current_char.isdigit():
-            #TODO: support for floats
+            # TODO: support for floats
             curr_char = self.current_char
             pos = self.current_pos
             tok = ""
-            #Take contiguous string of numbers
+            # Take contiguous string of numbers
             while curr_char.isdigit():
                 tok += curr_char
                 pos += 1
@@ -101,13 +103,13 @@ class Lexer:
             self.current_pos = pos
             self.current_char = curr_char
             return Token(int(tok), TokenType.NUM)
-        
+
         #Symbol and tokens
         if self.current_char.isalpha():
             curr_char = self.current_char
             pos = self.current_pos
             tok = ""
-            #Take contiguous string of alphabetic characters (word)
+            # Take contiguous string of alphabetic characters (word)
             while curr_char.isalpha():
                 tok += curr_char
                 pos += 1
@@ -118,12 +120,13 @@ class Lexer:
             self.current_pos = pos
             self.current_char = curr_char
             return Token(tok, TokenType.SYM)
-        
-        #1-char tokens/operators
+
+        # 1-char tokens/operators
         if len(self.current_char) == 1:
             op = self.operators.get(self.current_char, None)
             if op == None:
-                raise LexerException(f"Invalid operator: {repr(self.current_char)}")
+                raise LexerException(
+                    f"Invalid operator: {repr(self.current_char)}")
             char_op = self.current_char
-            self._next_char() #Advance character pointer
+            self._next_char()  # Advance character pointer
             return Token(char_op, op)

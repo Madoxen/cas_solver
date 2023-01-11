@@ -3,9 +3,11 @@ from equation_parser import AST, BinOp
 from lexer import TokenType, Token
 from utils import create_graphviz_graph, inorder, distance, swap, trace
 from itertools import combinations, groupby, pairwise, permutations
-from pattern_matcher import AnyOp, create_compound_binop, match 
+from pattern_matcher import AnyOp, create_compound_binop, match
 
 # x+y+x -> x+x+y
+
+
 def attract_add_sub_mul(start_node: AST) -> bool:
     # search for pattern from start node
     # The following pattern is searched
@@ -23,26 +25,28 @@ def attract_add_sub_mul(start_node: AST) -> bool:
     try:
         # Search rule:
         left_sided_pattern = create_compound_binop({TokenType.PLUS, TokenType.MINUS},
-                                left=create_compound_binop({TokenType.PLUS, TokenType.MINUS}, left=AnyOp(), right=AnyOp()), 
-                                right=AnyOp()) 
+                                                   left=create_compound_binop(
+                                                       {TokenType.PLUS, TokenType.MINUS}, left=AnyOp(), right=AnyOp()),
+                                                   right=AnyOp())
         right_sided_pattern = create_compound_binop({TokenType.PLUS, TokenType.MINUS},
-                                left=AnyOp(), 
-                                right=create_compound_binop({TokenType.PLUS, TokenType.MINUS}, left=AnyOp(), right=AnyOp())) 
+                                                    left=AnyOp(),
+                                                    right=create_compound_binop({TokenType.PLUS, TokenType.MINUS}, left=AnyOp(), right=AnyOp()))
 
         left_sided_pattern_mul = create_compound_binop({TokenType.MUL},
-                                left=create_compound_binop({TokenType.MUL}, left=AnyOp(), right=AnyOp()), 
-                                right=AnyOp()) 
-                                
+                                                       left=create_compound_binop(
+                                                           {TokenType.MUL}, left=AnyOp(), right=AnyOp()),
+                                                       right=AnyOp())
+
         right_sided_pattern_mul = create_compound_binop({TokenType.MUL},
-                                left=AnyOp(), 
-                                right=create_compound_binop({TokenType.MUL}, left=AnyOp(), right=AnyOp())) 
+                                                        left=AnyOp(),
+                                                        right=create_compound_binop({TokenType.MUL}, left=AnyOp(), right=AnyOp()))
 
-        left_sided = match(start_node, left_sided_pattern) 
-        right_sided = match(start_node, right_sided_pattern) 
+        left_sided = match(start_node, left_sided_pattern)
+        right_sided = match(start_node, right_sided_pattern)
 
-        left_sided_mul = match(start_node, left_sided_pattern_mul) 
-        right_sided_mul = match(start_node, right_sided_pattern_mul) 
-                       
+        left_sided_mul = match(start_node, left_sided_pattern_mul)
+        right_sided_mul = match(start_node, right_sided_pattern_mul)
+
         left_sided = left_sided or left_sided_mul
         right_sided = right_sided or right_sided_mul
 
@@ -60,11 +64,10 @@ def attract_add_sub_mul(start_node: AST) -> bool:
         unknowns, key=lambda x: x.token.value)]
 
     # Focus on unknowns that have the most nodes in the tree
-    unknowns = max(unknowns, key=lambda x: len(x)) 
+    unknowns = max(unknowns, key=lambda x: len(x))
 
     # Compute distance array
-    unknowns_distances = [distance(x, y) for x,y in combinations(unknowns,2)] 
-
+    unknowns_distances = [distance(x, y) for x, y in combinations(unknowns, 2)]
 
     for far in [False, True]:
         # Apply transformation
@@ -80,7 +83,8 @@ def attract_add_sub_mul(start_node: AST) -> bool:
                 swap(start_node.right.right, start_node.left)
 
         # calculate distances again and compare
-        new_unknowns_distances = [distance(x, y) for x,y in combinations(unknowns,2)] 
+        new_unknowns_distances = [distance(x, y)
+                                  for x, y in combinations(unknowns, 2)]
 
         # calculate distance change, if there is at least one negative change (so the two occurences of the same
         # variable are closer) accept the change, otherwise reverse changes to the tree
@@ -88,10 +92,10 @@ def attract_add_sub_mul(start_node: AST) -> bool:
         for old_dist, new_dist in zip(unknowns_distances, new_unknowns_distances):
             distance_difference.append(new_dist - old_dist)
 
-        success = any(x < 0 for x in distance_difference) 
+        success = any(x < 0 for x in distance_difference)
 
         if not success:
-            #reverse transformation
+            # reverse transformation
             if left_sided:
                 if not far:
                     swap(start_node.left.right, start_node.right)

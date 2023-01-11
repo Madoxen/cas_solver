@@ -73,8 +73,8 @@ def isSolution(eq: BinOp) -> bool:
 
 def getSolution(sub_tree: SubstitutionTree):
     """Gets solution without any unknowns"""
-    #TODO: relax this method so that it returns solution with least
-    #amount of unknowns
+    # TODO: relax this method so that it returns solution with least
+    # amount of unknowns
     if isSolution(sub_tree.equation):
         return sub_tree.equation
     for c in sub_tree.children:
