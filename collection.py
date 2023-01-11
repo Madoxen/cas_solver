@@ -124,17 +124,22 @@ def collect_add_sub_same_symbols_pow_mul_nums(op: BinOp) -> bool:
     sym = op.left.right.left.value
     power = op.left.right.right.value
 
+    multiplier = n+m if op.token.type == TokenType.PLUS else n-m
+
     print(n,m,sym,power)
     #create replacement
-    new_op = create_mul_op(
-        left = create_num(m+n),
-        right = create_pow_op(
-            left = create_sym(sym),
-            right = create_num(power) 
+    if multiplier != 0: 
+        new_op = create_mul_op(
+            left = create_num(multiplier),
+            right = create_pow_op(
+                left = create_sym(sym),
+                right = create_num(power) 
+            )
         )
-    )
 
-    replace(op, new_op)
+        replace(op, new_op)
+    else:
+        replace(op, create_num(0))
     return True
 
 #Collection search and rewrite rules

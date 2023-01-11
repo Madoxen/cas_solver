@@ -125,7 +125,8 @@ def replace(original_op, new_op):
             original_op.parent.right = new_op
     else:
         raise Exception(f"Cannot reassign child references from type {type(original_op.parent)}")
-    new_op.parent = original_op.parent
+    if new_op != None:
+        new_op.parent = original_op.parent
 
 
         
