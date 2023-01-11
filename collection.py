@@ -129,7 +129,6 @@ def collect_add_sub_same_symbols_pow_mul_nums(op: BinOp) -> bool:
 
     multiplier = n+m if op.token.type == TokenType.PLUS else n-m
 
-    print(n, m, sym, power)
     # create replacement
     if multiplier != 0:
         new_op = create_mul_op(
