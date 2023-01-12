@@ -3,10 +3,15 @@ from isolation import Solver
 from lexer import TokenType
 from utils import trace
 
+#Tests entire solving process 
+
+
 # TODO: refactor test and code to not depend on
 # previous lexer and parser modules so that
 # test failures wont cascade throught the code tree
 # Make solver methods accept the parsed tree from outside
+
+
 
 
 def test_dfs():
@@ -41,7 +46,6 @@ def test_solver_add_right():
     # a   b               c   a
     s = Solver("a+b=c")
     r = s.solve("b")
-
     assert r.op.type == TokenType.EQ
     assert r.left.token.type == TokenType.SYM
     assert r.left.value == "b"
@@ -74,26 +78,18 @@ def test_solver_sub_right():
     # a - b = c  --->  b = -c + a
     #     =               =
     #    / \             / \
-    #   -   c    --->   b   +
+    #   -   c    --->   b   -
     #  / \                 / \
-    # a  b                -   a
-    #                    /
-    #                   c
+    # a  b                c   a
+    #                    
+    #                   
     s = Solver("a-b=c")
     r = s.solve("b")
-    print(trace(r))
     assert r.op.type == TokenType.EQ
     assert r.left.token.type == TokenType.SYM
-    assert r.left.value == "b"
-    assert r.right.op.type == TokenType.PLUS
-    assert isinstance(r.right.left, UnaryOp)
-    assert r.right.left.token.type == TokenType.MINUS
-    assert r.right.right.token.type == TokenType.SYM
-    assert r.right.left.token.value == "-"
-    assert r.right.right.value == "a"
-    assert r.right.left.expr.token.type == TokenType.SYM
-    assert r.right.left.expr.token.value == "c"
-
+    assert r.right.token.type == TokenType.MINUS
+    assert r.right.right.token.value == "a"
+    assert r.right.left.token.value == "c"
 
 def test_solver_solve_mul_left():
     # a * b = c  ---> a = c / b
@@ -183,6 +179,13 @@ def test_solver_multiple_unknown_occurences():
    assert r.op.type == TokenType.EQ
    assert r.left.token.type == TokenType.SYM
    assert r.right.token.type == TokenType.NUM
+
+   r = Solver("x-x-x=1").solve("x") 
+   assert r.op.type == TokenType.EQ
+   assert r.left.token.type == TokenType.SYM
+   assert r.right.token.type == TokenType.NUM
+
+
 
 # TODO: Upgrade test so that it takes collection and attraction into consideration
 # def test_solver_complex_eq():

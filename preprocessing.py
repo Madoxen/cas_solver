@@ -35,6 +35,45 @@ def preprocess_plus_unary_minus(start_node: AST):
     replace(start_node, new_op)
     return True
 
+def preprocess_unary_minus_plus(start_node: AST):
+    """Changes occurences of unary minus and plus into binary minus"""
+    # Find any +-
+    pattern = create_plus_op(
+        left=create_minus_unary(expr=AnyOp()),
+        right=AnyOp())
+
+    if not match(start_node, pattern):
+        return False
+
+    # Turn +- into binary -
+    new_op = create_minus_op(
+        left=start_node.left.expr,
+        right=start_node.right,
+        parent=start_node.parent)
+    # Replace OP
+    replace(start_node, new_op)
+    return True
+
+
+
+def preprocess_minus_unary_minus(start_node: AST):
+    """Changes occurences of unary minus and plus into binary minus"""
+    pattern = create_minus_op(
+        left=AnyOp(),
+        right=create_minus_unary(expr=AnyOp())
+    )
+
+    if not match(start_node, pattern):
+        return False
+
+    #turn -- into binary + 
+    new_op = create_plus_op(
+        left=start_node.left,
+        right=start_node.right.expr,
+        parent=start_node.parent)
+    # Replace OP
+    replace(start_node, new_op)
+    return True
 
 def preprocess_symbols_without_multiplication(start_node: AST):
     """Preprocesses symbol nodes that are not being multiplied
@@ -89,7 +128,8 @@ def preprocess(root: AST):
     """Applies preprocessing to allow execution of some rules in attraction and collection modules
     without preprocessing, we would have to write many additional rules"""
     collection_functions = [preprocess_plus_unary_minus,
-                            preprocess_symbols_without_power, preprocess_symbols_without_multiplication]
+                            preprocess_symbols_without_power, preprocess_symbols_without_multiplication, preprocess_minus_unary_minus,preprocess_unary_minus_plus]
+                        
     rerun = True
     while rerun:
         rerun = False

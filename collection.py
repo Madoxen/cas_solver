@@ -18,7 +18,7 @@ def collect_numbers(op: BinOp) -> bool:
     """
 
     try:
-        # Search rule:
+        # Search rules:
         if not (op.token.type in {TokenType.PLUS, TokenType.MINUS, TokenType.MUL, TokenType.DIV, TokenType.POW}
                 and op.left.token.type == TokenType.NUM
                 and op.right.token.type == TokenType.NUM):
