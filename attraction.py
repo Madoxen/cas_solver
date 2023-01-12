@@ -61,6 +61,8 @@ def attract_add_sub_mul(start_node: AST) -> bool:
     unknowns = [list(g) for k, g in groupby(
         unknowns, key=lambda x: x.token.value)]
 
+    if len(unknowns) == 0:
+        return False
     # Focus on unknowns that have the most nodes in the tree
     unknowns = max(unknowns, key=lambda x: len(x))
 

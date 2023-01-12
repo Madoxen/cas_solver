@@ -116,11 +116,11 @@ class Solver:
         if self.root.op.type != TokenType.EQ:
             raise SolverException(
                 "Provided expression tree does not contain '=' at root element")
-
-        preprocess(self.root)
-        print("preprocess", trace(self.root))
+        print("input", trace(self.root))
         attract(self.root)
         print("attract", trace(self.root))
+        preprocess(self.root)
+        print("preprocess", trace(self.root))
         collect(self.root)
         print("collect", trace(self.root))
         postprocess(self.root)
@@ -282,10 +282,10 @@ class Solver:
 
         print("isolate", trace(self.root))
         # Postprocessing
-        preprocess(self.root)
-        print("preprocess", trace(self.root))
         attract(self.root)
         print("attract", trace(self.root))
+        preprocess(self.root)
+        print("preprocess", trace(self.root))
         collect(self.root)
         print("collect", trace(self.root))
         postprocess(self.root)
