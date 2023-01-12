@@ -2,7 +2,7 @@
 from equation_parser import AST, BinOp, UnaryOp
 from lexer import TokenType
 from pattern_matcher import AnyOp, create_compound_binop, match
-from utils import create_mul_op, create_num, create_plus_op, create_pow_op, create_sym, inorder, replace
+from utils import create_minus_unary, create_mul_op, create_num, create_plus_op, create_pow_op, create_sym, inorder, replace
 
 
 class CollectionException(Exception):
@@ -19,12 +19,30 @@ def collect_numbers(op: BinOp) -> bool:
 
     try:
         # Search rules:
-        if not (op.token.type in {TokenType.PLUS, TokenType.MINUS, TokenType.MUL, TokenType.DIV, TokenType.POW}
-                and op.left.token.type == TokenType.NUM
-                and op.right.token.type == TokenType.NUM):
+        pattern_normal = create_compound_binop({TokenType.PLUS, TokenType.MINUS, TokenType.MUL, TokenType.DIV, TokenType.POW},
+        left=create_num(),
+        right=create_num())
+
+        pattern_unary_num = create_compound_binop({TokenType.PLUS, TokenType.MINUS, TokenType.MUL, TokenType.DIV, TokenType.POW},
+        left=create_minus_unary(expr=create_num()),
+        right=create_num())
+
+        pattern_num_unary = create_compound_binop({TokenType.PLUS, TokenType.MINUS, TokenType.MUL, TokenType.DIV, TokenType.POW},
+        left=create_num(),
+        right=create_minus_unary(expr=create_num()))
+
+        pattern_unary_unary = create_compound_binop({TokenType.PLUS, TokenType.MINUS, TokenType.MUL, TokenType.DIV, TokenType.POW},
+        left=create_minus_unary(expr=create_num()),
+        right=create_minus_unary(expr=create_num()))
+
+        if not (match(op,pattern_normal) 
+        or match(op,pattern_num_unary) 
+        or match(op,pattern_unary_num)
+        or match(op,pattern_unary_unary)):
             return False
     except AttributeError:
         return False
+
 
     # define concrete operation dict
     op_dict = {
@@ -35,10 +53,17 @@ def collect_numbers(op: BinOp) -> bool:
         TokenType.POW: lambda x, y: x ** y
     }
 
-    # apply rule
-    l = op.left
-    r = op.right
-    num = create_num(op_dict[op.token.type](l.value, r.value), op.parent)
+    l = op.left.token.value
+    r = op.right.token.value
+
+    #convert numbers with unary minuses into negative numbers
+    if isinstance(op.left, UnaryOp):
+        l = -1 * op.left.expr.value
+
+    if isinstance(op.right, UnaryOp):
+        r = -1 * op.right.expr.value
+
+    num = create_num(op_dict[op.token.type](l, r), op.parent)
 
     # change references
     if isinstance(op.parent, UnaryOp):
