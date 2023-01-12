@@ -111,6 +111,7 @@ def collect_add_sub_same_symbols_pow_mul_nums(op: BinOp) -> bool:
                 right=create_num(),
             )))
 
+    
     if not match(op, pattern):
         return False
 

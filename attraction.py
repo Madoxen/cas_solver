@@ -6,8 +6,6 @@ from itertools import combinations, groupby, pairwise, permutations
 from pattern_matcher import AnyOp, create_compound_binop, match
 
 # x+y+x -> x+x+y
-
-
 def attract_add_sub_mul(start_node: AST) -> bool:
     # search for pattern from start node
     # The following pattern is searched
@@ -92,7 +90,7 @@ def attract_add_sub_mul(start_node: AST) -> bool:
         for old_dist, new_dist in zip(unknowns_distances, new_unknowns_distances):
             distance_difference.append(new_dist - old_dist)
 
-        success = any(x < 0 for x in distance_difference)
+        success = sum(distance_difference) < 0
 
         if not success:
             # reverse transformation

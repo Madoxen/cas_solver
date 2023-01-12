@@ -116,7 +116,6 @@ class SystemSolver:
                     self.symbol_eq_lookup[n.value].append(eq)
 
     # solve for symbol
-
     def solve(self, target_symbol: str):
         # produce list of equations that contain target symbol
         target_symbol_equations = self.symbol_eq_lookup.get(
@@ -188,6 +187,7 @@ s = SystemSolver()
 # s.add_equation("y = v")
 # s.add_equation("v = 2")
 # r = s.solve("x")
+
 # s.add_equation("ek = (m*v^2) / 2")
 # s.add_equation("p = m*v")
 # s.add_equation("p = 10")

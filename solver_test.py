@@ -178,6 +178,11 @@ def test_solver_solve_div_right():
     assert r.right.left.value == "a"
     assert r.right.right.value == "c"
 
+def test_solver_multiple_unknown_occurences():
+   r = Solver("x+x+x=1").solve("x") 
+   assert r.op.type == TokenType.EQ
+   assert r.left.token.type == TokenType.SYM
+   assert r.right.token.type == TokenType.NUM
 
 # TODO: Upgrade test so that it takes collection and attraction into consideration
 # def test_solver_complex_eq():

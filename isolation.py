@@ -121,7 +121,7 @@ class Solver:
         attract(self.root)
         collect(self.root)
         postprocess(self.root)
-
+        print(trace(self.root))
         # perform DFS to find requested symbol occurences
         # TODO: make sure that left and right subtree are NOT None!!
         left_subtree_snodes = self.dfs(symbol, self.root.left)
