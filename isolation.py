@@ -4,7 +4,7 @@ from equation_parser import AST, BinOp, Num, Parser, UnaryOp
 from lexer import Lexer, TokenType, Token
 from postprocessing import postprocess
 from preprocessing import preprocess
-from utils import add_unary_minus, create_div_op, create_mul_op, create_num, create_plus_op, create_sym, trace, inorder
+from utils import add_unary_minus, create_div_op, create_graphviz_graph, create_mul_op, create_num, create_plus_op, create_sym, trace, inorder
 from collection import collect
 import math
 
@@ -118,10 +118,13 @@ class Solver:
                 "Provided expression tree does not contain '=' at root element")
 
         preprocess(self.root)
+        print("preprocess", trace(self.root))
         attract(self.root)
+        print("attract", trace(self.root))
         collect(self.root)
+        print("collect", trace(self.root))
         postprocess(self.root)
-        print(trace(self.root))
+        print("postprocess", trace(self.root))
         # perform DFS to find requested symbol occurences
         # TODO: make sure that left and right subtree are NOT None!!
         left_subtree_snodes = self.dfs(symbol, self.root.left)
@@ -276,11 +279,17 @@ class Solver:
                         raise SolverException(
                             f"Could not find inverse operation for: {n.op.type}")
                     inv_op(n, isTargetLeft)
+
+        print("isolate", trace(self.root))
         # Postprocessing
         preprocess(self.root)
+        print("preprocess", trace(self.root))
         attract(self.root)
+        print("attract", trace(self.root))
         collect(self.root)
+        print("collect", trace(self.root))
         postprocess(self.root)
+        print("postprocess", trace(self.root))
         return self.root
 
     def dfs(self, symbol: str, start_point: AST = None) -> List[AST]:

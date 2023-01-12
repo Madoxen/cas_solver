@@ -46,9 +46,10 @@ def preprocess_unary_minus_plus(start_node: AST):
         return False
 
     # Turn +- into binary -
+    # and switch sides
     new_op = create_minus_op(
-        left=start_node.left.expr,
-        right=start_node.right,
+        left=start_node.right,
+        right=start_node.left.expr,
         parent=start_node.parent)
     # Replace OP
     replace(start_node, new_op)
@@ -137,4 +138,3 @@ def preprocess(root: AST):
             tree_inord = inorder(root)
             for node in tree_inord:
                 rerun |= f(node)
-    print(trace(root))

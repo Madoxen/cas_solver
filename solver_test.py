@@ -80,7 +80,7 @@ def test_solver_sub_right():
     #    / \             / \
     #   -   c    --->   b   -
     #  / \                 / \
-    # a  b                c   a
+    # a   b               a   c
     #                    
     #                   
     s = Solver("a-b=c")
@@ -88,8 +88,8 @@ def test_solver_sub_right():
     assert r.op.type == TokenType.EQ
     assert r.left.token.type == TokenType.SYM
     assert r.right.token.type == TokenType.MINUS
-    assert r.right.right.token.value == "a"
-    assert r.right.left.token.value == "c"
+    assert r.right.right.token.value == "c"
+    assert r.right.left.token.value == "a"
 
 def test_solver_solve_mul_left():
     # a * b = c  ---> a = c / b
