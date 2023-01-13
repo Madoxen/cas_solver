@@ -116,6 +116,8 @@ def create_sym(sym: int | float | str = "", parent: AST | None = None) -> Num:
 def create_minus_unary(expr: AST, parent: AST | None = None):
     return UnaryOp(expr, Token('-', TokenType.MINUS), parent)
 
+def create_func_unary(expr: AST, func: str, parent: AST | None = None):
+    return UnaryOp(expr, Token(func, TokenType.FUNC), parent)
 
 def add_unary_minus(node: AST):
     """Adds unary minus to target node, placing unary minus node in-between

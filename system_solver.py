@@ -194,13 +194,18 @@ s = SystemSolver()
 # s.add_equation("m = 5")
 # r = s.solve("ek")
 
-# s.add_equation("sin(x) = 2+z")
-# s.add_equation("z = sin(y)")
-# s.add_equation("y = 1")
-# r = s.solve("x")
-# sol = getSolution(r)
+# s.add_equation("r = 1/2 * a*t^2")
+# s.add_equation("a = 10")
+# s.add_equation("t = 20")
+# r = s.solve("r")
 
-# if sol != None:
-#     print(trace(sol))
-# else:
-#     print("No solution found.")
+s.add_equation("sin(x) = 2+z")
+s.add_equation("z = sin(y)")
+s.add_equation("y = 1")
+r = s.solve("x")
+sol = getSolution(r)
+
+if sol != None:
+    print(trace(sol))
+else:
+    print("No solution found.")

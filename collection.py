@@ -1,13 +1,37 @@
 
+from math import acos, asin, atan, cos, sin, tan
 from equation_parser import AST, BinOp, UnaryOp
 from lexer import TokenType
 from pattern_matcher import AnyOp, create_compound_binop, match
-from utils import create_minus_unary, create_mul_op, create_num, create_plus_op, create_pow_op, create_sym, inorder, replace
+from utils import create_func_unary, create_minus_unary, create_mul_op, create_num, create_plus_op, create_pow_op, create_sym, inorder, replace
 
 
 class CollectionException(Exception):
     pass
 
+
+def collect_functions(op: UnaryOp) -> bool:
+    """Searches for the following pattern in the code and applies rule:
+    func(NUM) -> num
+    """
+
+    pattern = create_func_unary(expr = create_num(), func="")
+    if not match(op,pattern):
+        return False
+
+    func_dict = {
+        "sin" : sin, 
+        "cos" : cos, 
+        "tan" : tan, 
+        "asin" : asin,
+        "acos" : acos,
+        "atan" : atan,
+    }
+
+    val = func_dict[op.token.value](op.expr.token.value)
+    node = create_num(val)
+    replace(op, node)
+    return True
 
 def collect_numbers(op: BinOp) -> bool:
     """Searches for the following pattern in the code
@@ -364,7 +388,7 @@ def collect_mul_same_symbols_with_pows(op: BinOp) -> bool:
 def collect(root: AST):
     """Applies collection rewrite rules to reduce count of variables and numbers"""
     collection_functions = [collect_numbers, collect_mul_same_symbols_with_pows, collect_add_sub_same_symbols_mul_nums,
-                            collect_add_sub_same_symbols, collect_mul_div_same_symbols, collect_add_sub_same_symbols_pow_mul_nums]
+                            collect_add_sub_same_symbols, collect_mul_div_same_symbols, collect_add_sub_same_symbols_pow_mul_nums, collect_functions]
     rerun = True
     while rerun:
         rerun = False
