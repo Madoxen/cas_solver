@@ -1,6 +1,7 @@
 from enum import Enum
 from typing import List
 
+from math import pi
 
 class TokenType(Enum):
     BEGIN = -1
@@ -119,6 +120,8 @@ class Lexer:
                     break
             self.current_pos = pos
             self.current_char = curr_char
+            if tok == "PI":
+                return Token(pi, TokenType.NUM)
             return Token(tok, TokenType.SYM)
 
         # 1-char tokens/operators
